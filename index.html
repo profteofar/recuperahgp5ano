@@ -605,6 +605,58 @@
       font-size: 0.82rem;
     }
 
+    /* ===== Relatório de Progresso / Resultado do Diagnóstico ===== */
+    .report-sheet {
+      background: #fff;
+      color: #1a1a1a;
+      border: 2px solid var(--coffee);
+      border-radius: 8px;
+      padding: 1.6rem;
+    }
+
+    .progress-map-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.85rem;
+    }
+
+    .progress-map-row .pm-title { flex: 1; font-weight: 600; }
+
+    .progress-map-row .pm-track {
+      width: 110px;
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .progress-map-row .pm-fill {
+      height: 100%;
+      background: var(--olive-green);
+    }
+
+    .progress-map-row .pm-percent { width: 46px; text-align: right; font-weight: 600; flex-shrink: 0; }
+    .progress-map-row .pm-status { width: 110px; text-align: right; font-size: 0.78rem; flex-shrink: 0; }
+
+    @media (max-width: 600px) {
+      .progress-map-row { flex-wrap: wrap; }
+      .progress-map-row .pm-status { width: auto; }
+    }
+
+    .diag-topic-heading {
+      color: var(--bronze);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 1.1rem 0 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px dashed var(--card-border);
+    }
+    .diag-topic-heading:first-child { margin-top: 0; }
+
     footer {
       background-color: var(--coffee);
       color: #dcdfe4;
@@ -668,19 +720,45 @@
       }
 
       /* ===== Modo Folha de Revisão: imprime só a Ficha de Revisão ===== */
-      body:not(.printing-certificate) .section-content {
+      body:not(.printing-certificate):not(.printing-report) .section-content {
         display: none !important;
       }
-      body:not(.printing-certificate) #tabExam.section-content {
+      body:not(.printing-certificate):not(.printing-report) #tabExam.section-content {
         display: block !important;
       }
-      body:not(.printing-certificate) .exam-sheet {
+      body:not(.printing-certificate):not(.printing-report) .exam-sheet {
         border: none !important;
         padding: 0 !important;
       }
-      body:not(.printing-certificate) .exam-topic {
+      body:not(.printing-certificate):not(.printing-report) .exam-topic {
         background: #fff !important;
         border: 1px solid #ccc !important;
+      }
+
+      /* ===== Modo Relatório: imprime SÓ o relatório de progresso ===== */
+      body.printing-report main > *:not(#progressModal) {
+        display: none !important;
+      }
+      body.printing-report #progressModal.modal-overlay {
+        position: static !important;
+        background: transparent !important;
+        display: block !important;
+        padding: 0 !important;
+        z-index: 99999 !important;
+      }
+      body.printing-report #progressModal .modal-window {
+        max-width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        background: #fff !important;
+      }
+      body.printing-report .report-sheet {
+        border: 2px solid #333 !important;
+        margin: 1rem auto !important;
+        max-width: 100% !important;
       }
     }
   </style>
@@ -693,9 +771,10 @@
     </div>
     <div class="header-actions">
       <div class="font-resizer" title="Ajustar Tamanho de Letra">
-        <button class="btn-resize" onclick="changeFontSize(-1)">A-</button>
-        <button class="btn-resize" onclick="changeFontSize(1)">A+</button>
+        <button class="btn-resize" onclick="changeFontSize(-1)" aria-label="Diminuir tamanho da letra">A-</button>
+        <button class="btn-resize" onclick="changeFontSize(1)" aria-label="Aumentar tamanho da letra">A+</button>
       </div>
+      <button class="btn btn-outline" onclick="openProgressModal()">📊 Progresso Geral</button>
       <button class="btn btn-outline" onclick="openCertModal()">🎓 Ver Diploma</button>
       <button class="btn btn-outline" onclick="openGuideModal()">📖 Guia</button>
       <button class="btn btn-olive" onclick="resetProgress()">🔄 Repor Tudo</button>
@@ -710,7 +789,8 @@
     <span class="badge-chip" id="badge-restaurador" title="Conclui a Ficha 10">🔒 Restaurador da Pátria</span>
   </div>
 
-  <nav id="navTabs">
+  <nav id="navTabs" role="tablist">
+    <button class="tab-btn" id="tabbtn-tabDiag" onclick="switchTab('tabDiag')">🩺 Ficha Diagnóstico</button>
     <button class="tab-btn active" id="tabbtn-tab1" onclick="switchTab('tab1')">1. Comunidades Recoletoras</button>
     <button class="tab-btn" id="tabbtn-tab2" onclick="switchTab('tab2')" disabled>🔒 2. Comunidades Agropastoris</button>
     <button class="tab-btn" id="tabbtn-tab3" onclick="switchTab('tab3')" disabled>🔒 3. Povos Mediterrânicos</button>
@@ -770,6 +850,212 @@
         <div style="display:flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;" class="no-print">
           <button class="btn btn-olive" onclick="printCertificate()">🖨️ Imprimir Certificado</button>
           <button class="btn btn-outline" onclick="closeCertModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="progressModal">
+      <div class="modal-window" style="max-width: 720px;">
+        <button class="modal-close" onclick="closeProgressModal()">&times;</button>
+        <div class="report-sheet" id="printReportArea">
+          <h2 style="color: var(--coffee); text-align:center; margin-bottom:0.3rem;">📊 Relatório de Progresso</h2>
+          <p style="text-align:center; font-size:0.85rem; color:#555; margin-bottom:1rem;">História e Geografia de Portugal — 5.º Ano</p>
+          <div style="text-align:center; margin-bottom:1.2rem;">
+            <input type="text" id="reportNameInput" placeholder="Nome do aluno (opcional)" style="font-size: 1.05rem; font-weight: bold; border: none; border-bottom: 2px solid var(--coffee); text-align: center; width: 70%; padding: 0.25rem; color: var(--coffee); outline: none; background: transparent;">
+          </div>
+          <div id="progressMapContainer"><!-- preenchido via JS --></div>
+          <p style="text-align:right; font-size:0.78rem; color:#777; margin-top:1rem;">Relatório gerado em <span id="reportDateSpan">--/--/----</span></p>
+        </div>
+        <div style="display:flex; justify-content: space-between; align-items:center; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap;" class="no-print">
+          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="exportProgress()">⬇️ Exportar Progresso</button>
+            <button class="btn btn-outline" onclick="triggerImportProgress()">⬆️ Importar Progresso</button>
+            <input type="file" id="importProgressFile" accept="application/json" style="display:none;" onchange="importProgress(event)">
+          </div>
+          <div style="display:flex; gap:0.6rem;">
+            <button class="btn btn-olive" onclick="printProgressReport()">🖨️ Imprimir Relatório</button>
+            <button class="btn btn-outline" onclick="closeProgressModal()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA DIAGNÓSTICO ================= -->
+    <div id="tabDiag" class="section-content">
+      <div class="study-card">
+        <h2>🩺 Ficha Diagnóstico</h2>
+        <p style="font-size:0.85rem; margin-bottom:0.8rem;">
+          Este diagnóstico não bloqueia nem desbloqueia nenhuma ficha — serve para identificares, em poucos minutos, os tópicos que já dominas e aqueles que precisas de rever com mais atenção. Podes fazê-lo quando quiseres: antes de começares, a meio do percurso ou até no fim, para confirmares o que aprendeste.
+        </p>
+
+        <div class="progress-bar-container">
+          <span id="score-diag">Perguntas respondidas: 0 de 12</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-diag"></div></div>
+          <button class="btn btn-danger-light" onclick="retryDiag()">🔄 Repetir Diagnóstico</button>
+        </div>
+
+        <div class="quiz-box">
+          <h3 class="diag-topic-heading">1. Comunidades Recoletoras</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f1_q1">
+            <div class="question-header">
+              <div class="question-title">As primeiras comunidades humanas alimentavam-se do que a Natureza lhes dava diretamente (caça, pesca e recoleção). Como se chamavam?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f1_q1', this, 'Correto! Eram comunidades recoletoras.')">Comunidades recoletoras</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f1_q1', this, 'Incorreto. As comunidades agropastoris já produziam o seu próprio alimento.')">Comunidades agropastoris</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f1_q1', this, 'Incorreto. Esse grupo de povos surge bem mais tarde, já com agricultura e comércio.')">Povos mediterrânicos</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f1_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">2. Comunidades Agropastoris</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f2_q1">
+            <div class="question-header">
+              <div class="question-title">Os grandes monumentos de pedra como as antas e os menires, construídos pelas comunidades agropastoris, chamam-se…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f2_q1', this, 'Incorreto. Os aquedutos são construções romanas para transportar água.')">aquedutos.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f2_q1', this, 'Correto! Chamam-se megálitos.')">megálitos.</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f2_q1', this, 'Incorreto. Os anfiteatros são construções romanas de espetáculos.')">anfiteatros.</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f2_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">3. Povos Mediterrânicos</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f3_q1">
+            <div class="question-header">
+              <div class="question-title">Que povo mediterrânico trouxe o alfabeto para a Península Ibérica?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f3_q1', this, 'Correto! Foram os Fenícios, no século X a.C.')">Os Fenícios</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f3_q1', this, 'Incorreto. Os Gregos trouxeram a moeda.')">Os Gregos</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f3_q1', this, 'Incorreto. Os Cartagineses trouxeram a técnica de salga do peixe.')">Os Cartagineses</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f3_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">4. Romanos na P. Ibérica</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f4_q1">
+            <div class="question-header">
+              <div class="question-title">Quem foi Viriato?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f4_q1', this, 'Correto! Foi o chefe lusitano que resistiu à conquista romana.')">O chefe lusitano que resistiu à conquista romana</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f4_q1', this, 'Incorreto. Nenhum imperador romano teve este nome.')">Um imperador romano</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f4_q1', this, 'Incorreto. Viriato viveu muito antes da chegada dos muçulmanos.')">Um chefe muçulmano</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f4_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">5. Os Muçulmanos</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f5_q1">
+            <div class="question-header">
+              <div class="question-title">A conquista muçulmana da Península Ibérica, em 711, ficou marcada pela Batalha de…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f5_q1', this, 'Correto! A Batalha de Guadalete, em 711.')">Guadalete.</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f5_q1', this, 'Incorreto. São Mamede é a batalha da formação de Portugal, em 1128.')">São Mamede.</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f5_q1', this, 'Incorreto. Aljubarrota ocorre muito mais tarde, em 1385.')">Aljubarrota.</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f5_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">6. Formação de Portugal</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f6_q1">
+            <div class="question-header">
+              <div class="question-title">Quem foi o primeiro rei de Portugal?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f6_q1', this, 'Correto! D. Afonso Henriques.')">D. Afonso Henriques</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f6_q1', this, 'Incorreto. D. Henrique foi apenas conde do Condado Portucalense.')">D. Henrique</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f6_q1', this, 'Incorreto. D. Dinis reinou muito mais tarde, já no século XIII.')">D. Dinis</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f6_q1"></div>
+          </div>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f6_q2">
+            <div class="question-header">
+              <div class="question-title">Ordena estes três acontecimentos do mais antigo ao mais recente:</div>
+            </div>
+            <div class="order-list" id="order_list_diag_f6">
+              <div class="order-item" data-val="mamede">Batalha de São Mamede <div class="order-controls"><button onclick="moveItem('order_list_diag_f6', -1, this)">▲</button><button onclick="moveItem('order_list_diag_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="zamora">Tratado de Zamora <div class="order-controls"><button onclick="moveItem('order_list_diag_f6', -1, this)">▲</button><button onclick="moveItem('order_list_diag_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="bula">Bula Manifestis Probatum <div class="order-controls"><button onclick="moveItem('order_list_diag_f6', -1, this)">▲</button><button onclick="moveItem('order_list_diag_f6', 1, this)">▼</button></div></div>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkOrder('diag', 'diag_f6_q2', 'order_list_diag_f6', ['mamede', 'zamora', 'bula'], 'Correto! S. Mamede (1128) → Tratado de Zamora (1143) → Bula Manifestis Probatum (1179).')">Validar Ordem</button>
+            <div class="feedback-box" id="fb-diag_f6_q2"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">7. Portugal no Século XIII</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f7_q1">
+            <div class="question-header">
+              <div class="question-title">Quem conquistou definitivamente o Algarve aos muçulmanos, em 1249?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f7_q1', this, 'Correto! D. Afonso III.')">D. Afonso III</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f7_q1', this, 'Incorreto. D. Dinis é conhecido pelo Tratado de Alcanizes, já depois desta conquista.')">D. Dinis</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f7_q1', this, 'Incorreto. D. Afonso Henriques foi o primeiro rei, muito antes deste episódio.')">D. Afonso Henriques</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f7_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">8. 1383-1385 Revolução</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f8_q1">
+            <div class="question-header">
+              <div class="question-title">Quem se tornou rei de Portugal após vencer a crise de 1383-1385, na Batalha de Aljubarrota?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f8_q1', this, 'Correto! D. João, Mestre de Avis, tornou-se D. João I.')">D. João, Mestre de Avis</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f8_q1', this, 'Incorreto. D. Fernando já tinha morrido, o que originou a crise.')">D. Fernando</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f8_q1', this, 'Incorreto. Filipe II torna-se rei muito mais tarde, em 1580.')">Filipe II de Espanha</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f8_q1"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">9. Séculos XV e XVI</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f9_q1">
+            <div class="question-header">
+              <div class="question-title">Quem chegou à Índia por via marítima, em 1498?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f9_q1', this, 'Correto! Vasco da Gama.')">Vasco da Gama</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f9_q1', this, 'Incorreto. Pedro Álvares Cabral chegou ao Brasil, em 1500.')">Pedro Álvares Cabral</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f9_q1', this, 'Incorreto. Bartolomeu Dias dobrou o Cabo das Tormentas, sem chegar à Índia.')">Bartolomeu Dias</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f9_q1"></div>
+          </div>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f9_q2">
+            <div class="question-header">
+              <div class="question-title">Ordena estes três acontecimentos da Expansão do mais antigo ao mais recente:</div>
+            </div>
+            <div class="order-list" id="order_list_diag_f9">
+              <div class="order-item" data-val="ceuta">Conquista de Ceuta <div class="order-controls"><button onclick="moveItem('order_list_diag_f9', -1, this)">▲</button><button onclick="moveItem('order_list_diag_f9', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="tormentas">Bartolomeu Dias dobra o Cabo das Tormentas <div class="order-controls"><button onclick="moveItem('order_list_diag_f9', -1, this)">▲</button><button onclick="moveItem('order_list_diag_f9', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="india">Vasco da Gama chega à Índia <div class="order-controls"><button onclick="moveItem('order_list_diag_f9', -1, this)">▲</button><button onclick="moveItem('order_list_diag_f9', 1, this)">▼</button></div></div>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkOrder('diag', 'diag_f9_q2', 'order_list_diag_f9', ['ceuta', 'tormentas', 'india'], 'Correto! Ceuta (1415) → Cabo das Tormentas (1488) → Índia (1498).')">Validar Ordem</button>
+            <div class="feedback-box" id="fb-diag_f9_q2"></div>
+          </div>
+
+          <h3 class="diag-topic-heading">10. União à Restauração</h3>
+          <div class="question-block" data-sheet="diag" data-qid="diag_f10_q1">
+            <div class="question-header">
+              <div class="question-title">Em que ano ocorreu a Restauração da Independência de Portugal?</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('diag', 'diag_f10_q1', this, 'Correto! 1 de dezembro de 1640.')">1640</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f10_q1', this, 'Incorreto. Em 1580 começa a União Ibérica, não a Restauração.')">1580</button>
+              <button class="option-btn" onclick="checkAnswer('diag', 'diag_f10_q1', this, 'Incorreto. Em 1383 morre D. Fernando, dando início à crise dinástica anterior.')">1383</button>
+            </div>
+            <div class="feedback-box" id="fb-diag_f10_q1"></div>
+          </div>
+        </div>
+
+        <div class="certificate-sheet" id="diagResultCard" style="display:none; margin-top:1.5rem;">
+          <div class="cert-seal">📋</div>
+          <h2>Resultado do Diagnóstico</h2>
+          <p style="font-size: 0.95rem; color: #555;">Pontuação global: <strong id="diagGlobalScore" style="color:var(--olive-green);">0%</strong></p>
+          <div id="diagTopicBreakdown" style="text-align:left; margin-top:1rem;"></div>
+          <p id="diagRecommendation" style="margin-top:1.2rem; font-size:0.9rem; text-align:left;"></p>
         </div>
       </div>
     </div>
@@ -1925,6 +2211,23 @@
       f10: 'União à Restauração'
     };
 
+    // Perguntas da Ficha Diagnóstico, organizadas por tópico (não fazem parte
+    // de QUESTIONS_PER_SHEET nem de SHEET_ORDER: não bloqueiam nem
+    // desbloqueiam nenhuma ficha, é apenas informativo).
+    const DIAG_QUESTIONS_PER_TOPIC = {
+      f1: ['diag_f1_q1'],
+      f2: ['diag_f2_q1'],
+      f3: ['diag_f3_q1'],
+      f4: ['diag_f4_q1'],
+      f5: ['diag_f5_q1'],
+      f6: ['diag_f6_q1', 'diag_f6_q2'],
+      f7: ['diag_f7_q1'],
+      f8: ['diag_f8_q1'],
+      f9: ['diag_f9_q1', 'diag_f9_q2'],
+      f10: ['diag_f10_q1']
+    };
+    const DIAG_ALL_QUESTIONS = Object.values(DIAG_QUESTIONS_PER_TOPIC).flat();
+
     let currentFontLevel = 0;
     const fontSizes = ['0.92rem', '1rem', '1.12rem'];
 
@@ -1949,14 +2252,20 @@
     }
 
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
       document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
 
       const target = document.getElementById(tabId);
       if (target) target.classList.add('active');
 
       const btn = document.getElementById('tabbtn-' + tabId);
-      if (btn) btn.classList.add('active');
+      if (btn) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+      }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2008,14 +2317,183 @@
       if (style) style.remove();
     }
 
+    function cleanupReportPrint() {
+      document.body.classList.remove('printing-report');
+    }
+
     // O evento 'afterprint' dispara assim que a caixa de diálogo de impressão
     // fecha (imprimir ou cancelar), o que é muito mais fiável do que um
     // temporizador fixo — este último podia retirar o modo de impressão do
     // certificado a meio da pré-visualização, antes de o utilizador terminar.
-    window.addEventListener('afterprint', cleanupCertPrint);
+    window.addEventListener('afterprint', () => {
+      cleanupCertPrint();
+      cleanupReportPrint();
+    });
 
     function printExamSheet() {
       window.print();
+    }
+
+    // ===================== Painel de Progresso Global =====================
+
+    function computeSheetStats(sheetId) {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      const qList = QUESTIONS_PER_SHEET[sheetId] || [];
+      let correct = 0;
+      qList.forEach(qid => { if (store[qid] && store[qid].isCorrect) correct++; });
+      const total = qList.length;
+      const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+      return { correct, total, percent };
+    }
+
+    function getSheetStatus(sheetId, percent, answeredAny) {
+      const btn = document.getElementById('tabbtn-' + sheetId);
+      const isLocked = btn ? btn.disabled : false;
+      if (isLocked) return '🔒 Bloqueada';
+      if (percent >= 70) return '✅ Concluída';
+      if (answeredAny) return '🔓 Em curso';
+      return '⚪ Por iniciar';
+    }
+
+    function computeDiagStats() {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      let answered = 0;
+      let correct = 0;
+      DIAG_ALL_QUESTIONS.forEach(qid => {
+        if (store[qid]) {
+          answered++;
+          if (store[qid].isCorrect) correct++;
+        }
+      });
+      const percent = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+      return { answered, correct, total: DIAG_ALL_QUESTIONS.length, percent };
+    }
+
+    function renderProgressMap() {
+      const container = document.getElementById('progressMapContainer');
+      if (!container) return;
+
+      let html = '';
+      let sumPercent = 0;
+
+      SHEET_ORDER.forEach(s => {
+        const { correct, total, percent } = computeSheetStats(s);
+        sumPercent += percent;
+        const status = getSheetStatus(s, percent, correct > 0);
+        html += `
+          <div class="progress-map-row">
+            <span class="pm-title">${SHEET_TITLES[s]}</span>
+            <div class="pm-track"><div class="pm-fill" style="width:${percent}%;"></div></div>
+            <span class="pm-percent">${percent}%</span>
+            <span class="pm-status">${status}</span>
+          </div>`;
+      });
+
+      const globalAvg = Math.round(sumPercent / SHEET_ORDER.length);
+      html += `
+        <div class="progress-map-row" style="border-top:2px solid var(--coffee); margin-top:0.4rem; padding-top:0.6rem;">
+          <span class="pm-title"><strong>Média Global (Fichas 1-10)</strong></span>
+          <div class="pm-track"><div class="pm-fill" style="width:${globalAvg}%; background:var(--coffee);"></div></div>
+          <span class="pm-percent"><strong>${globalAvg}%</strong></span>
+          <span class="pm-status"></span>
+        </div>`;
+
+      const diagStats = computeDiagStats();
+      html += `
+        <div class="progress-map-row" style="margin-top:0.6rem; border-top:1px dashed #ccc; padding-top:0.6rem;">
+          <span class="pm-title">🩺 Diagnóstico Inicial</span>
+          <div class="pm-track"><div class="pm-fill" style="width:${diagStats.percent}%; background:var(--bronze);"></div></div>
+          <span class="pm-percent">${diagStats.answered}/${diagStats.total}</span>
+          <span class="pm-status">${diagStats.answered > 0 ? diagStats.percent + '% corretas' : '—'}</span>
+        </div>`;
+
+      container.innerHTML = html;
+
+      const dateSpan = document.getElementById('reportDateSpan');
+      if (dateSpan) {
+        const now = new Date();
+        dateSpan.innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      }
+    }
+
+    function openProgressModal() {
+      renderProgressMap();
+      // Pré-preenche o nome do relatório a partir do certificado, se já tiver sido escrito
+      const certName = document.getElementById('studentNameInput');
+      const reportName = document.getElementById('reportNameInput');
+      if (certName && reportName && certName.value.trim() && !reportName.value.trim()) {
+        reportName.value = certName.value.trim();
+      }
+      document.getElementById('progressModal').classList.add('active');
+    }
+    function closeProgressModal() { document.getElementById('progressModal').classList.remove('active'); }
+
+    function printProgressReport() {
+      renderProgressMap();
+      document.body.classList.add('printing-report');
+      window.print();
+      setTimeout(cleanupReportPrint, 3000);
+    }
+
+    // ===================== Exportar / Importar Progresso =====================
+
+    function exportProgress() {
+      const answers = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      const nameInput = document.getElementById('studentNameInput');
+      const payload = {
+        app: 'Recuperação HGP 5.º Ano',
+        exportedAt: new Date().toISOString(),
+        studentName: nameInput ? nameInput.value.trim() : '',
+        answers: answers
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const safeName = (payload.studentName || 'progresso').replace(/[^a-zA-Z0-9-_ ]/g, '').trim().replace(/\s+/g, '_') || 'progresso';
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `hgp5_${safeName}_${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function triggerImportProgress() {
+      document.getElementById('importProgressFile').click();
+    }
+
+    function importProgress(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const payload = JSON.parse(e.target.result);
+          const answers = payload.answers || payload; // aceita o formato exportado ou um dump direto
+          if (typeof answers !== 'object' || answers === null || Array.isArray(answers)) {
+            throw new Error('Formato inválido');
+          }
+
+          const proceed = confirm('Importar este ficheiro vai SUBSTITUIR o progresso atual guardado neste dispositivo. Queres continuar?');
+          if (!proceed) { event.target.value = ''; return; }
+
+          localStorage.setItem('hgp5_all_official_answers', JSON.stringify(answers));
+          if (payload.studentName) {
+            const nameInput = document.getElementById('studentNameInput');
+            if (nameInput) nameInput.value = payload.studentName;
+          }
+          alert('Progresso importado com sucesso! A página vai ser recarregada.');
+          location.reload();
+        } catch (err) {
+          alert('Não foi possível importar este ficheiro. Verifica se é um ficheiro de progresso exportado por esta aplicação.');
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
     }
 
     function updateCertificateData() {
@@ -2112,6 +2590,17 @@
       updateBadges(store);
     }
 
+    // Direciona a atualização de pontuação: para as fichas normais mantém o
+    // comportamento já existente (updateSheetScore); para a Ficha Diagnóstico
+    // ('diag') usa a lógica própria, que não bloqueia/desbloqueia nada.
+    function refreshScore(sheetId) {
+      if (sheetId === 'diag') {
+        updateDiagResults();
+      } else {
+        updateSheetScore(sheetId);
+      }
+    }
+
     function checkAnswer(sheetId, qid, clickedBtn, feedback) {
       const qBlock = document.querySelector(`[data-qid="${qid}"]`);
       if (!qBlock) return;
@@ -2129,7 +2618,7 @@
       const isCorrect = (clickedBtn.getAttribute('data-correct') === 'true');
       showFeedback(qid, isCorrect, feedback);
       saveState(qid, { type: 'single', selectedText: clickedBtn.innerText, isCorrect });
-      updateSheetScore(sheetId);
+      refreshScore(sheetId);
     }
 
     function checkMultipleSelect(sheetId, qid, correctArray, feedback) {
@@ -2144,7 +2633,7 @@
       const isCorrect = (JSON.stringify(selected.sort()) === JSON.stringify(correctArray.sort()));
       showFeedback(qid, isCorrect, feedback);
       saveState(qid, { type: 'multi', selected, isCorrect });
-      updateSheetScore(sheetId);
+      refreshScore(sheetId);
     }
 
     function checkDropdown(sheetId, qid, correctValues, feedback) {
@@ -2161,7 +2650,7 @@
 
       showFeedback(qid, isCorrect, feedback);
       saveState(qid, { type: 'dropdown', values, isCorrect });
-      updateSheetScore(sheetId);
+      refreshScore(sheetId);
     }
 
     function checkMatching(sheetId, qid, matchMap, feedback) {
@@ -2177,7 +2666,7 @@
 
       showFeedback(qid, isCorrect, feedback);
       saveState(qid, { type: 'match', values, isCorrect });
-      updateSheetScore(sheetId);
+      refreshScore(sheetId);
     }
 
     function moveItem(listId, direction, btn) {
@@ -2200,7 +2689,7 @@
 
       list.querySelectorAll('button').forEach(b => b.disabled = true);
       saveState(qid, { type: 'order', order: currentOrder, isCorrect });
-      updateSheetScore(sheetId);
+      refreshScore(sheetId);
     }
 
     function showFeedback(qid, isCorrect, text) {
@@ -2225,6 +2714,81 @@
         location.reload();
       }
     }
+
+    // ===================== Ficha Diagnóstico =====================
+
+    function updateDiagResults() {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      let answered = 0;
+      let correctTotal = 0;
+      DIAG_ALL_QUESTIONS.forEach(qid => {
+        if (store[qid]) {
+          answered++;
+          if (store[qid].isCorrect) correctTotal++;
+        }
+      });
+      const total = DIAG_ALL_QUESTIONS.length;
+      const percentAnswered = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+      const scoreEl = document.getElementById('score-diag');
+      const fillEl = document.getElementById('pfill-diag');
+      if (scoreEl) scoreEl.innerText = `Perguntas respondidas: ${answered} de ${total}`;
+      if (fillEl) fillEl.style.width = `${percentAnswered}%`;
+
+      const resultCard = document.getElementById('diagResultCard');
+      if (answered === total) {
+        renderDiagResultCard(store, correctTotal, total);
+        if (resultCard) resultCard.style.display = 'block';
+      } else if (resultCard) {
+        resultCard.style.display = 'none';
+      }
+    }
+
+    function renderDiagResultCard(store, correctTotal, total) {
+      const globalScoreEl = document.getElementById('diagGlobalScore');
+      const globalPercent = total > 0 ? Math.round((correctTotal / total) * 100) : 0;
+      if (globalScoreEl) globalScoreEl.innerText = `${globalPercent}%`;
+
+      const weakTopics = [];
+      let html = '';
+      Object.keys(DIAG_QUESTIONS_PER_TOPIC).forEach(topicId => {
+        const qList = DIAG_QUESTIONS_PER_TOPIC[topicId];
+        let correct = 0;
+        qList.forEach(qid => { if (store[qid] && store[qid].isCorrect) correct++; });
+        const percent = Math.round((correct / qList.length) * 100);
+        const isWeak = percent < 70;
+        if (isWeak) weakTopics.push(SHEET_TITLES[topicId]);
+
+        html += `
+          <div class="progress-map-row">
+            <span class="pm-title">${isWeak ? '⚠️' : '✅'} ${SHEET_TITLES[topicId]}</span>
+            <div class="pm-track"><div class="pm-fill" style="width:${percent}%; background:${isWeak ? 'var(--danger)' : 'var(--olive-green)'};"></div></div>
+            <span class="pm-percent">${percent}%</span>
+          </div>`;
+      });
+
+      const breakdownEl = document.getElementById('diagTopicBreakdown');
+      if (breakdownEl) breakdownEl.innerHTML = html;
+
+      const recEl = document.getElementById('diagRecommendation');
+      if (recEl) {
+        if (weakTopics.length === 0) {
+          recEl.innerHTML = '<strong>Parabéns!</strong> Mostraste bons conhecimentos em todos os tópicos. Podes rever as fichas pela ordem que preferires, só para consolidar.';
+        } else {
+          recEl.innerHTML = `Com base neste diagnóstico, sugerimos começares por rever: <strong>${weakTopics.join(', ')}</strong>.`;
+        }
+      }
+    }
+
+    function retryDiag() {
+      if (confirm('Queres reiniciar o Diagnóstico e responder novamente a todas as perguntas?')) {
+        const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+        DIAG_ALL_QUESTIONS.forEach(qid => { delete store[qid]; });
+        localStorage.setItem('hgp5_all_official_answers', JSON.stringify(store));
+        location.reload();
+      }
+    }
+
 
     function loadState() {
       const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
@@ -2255,10 +2819,21 @@
           }
           const confirmBtn = qBlock.querySelector('button.btn-bronze');
           if (confirmBtn) confirmBtn.click();
+        } else if (data.type === 'order') {
+          const orderList = qBlock.querySelector('.order-list');
+          if (orderList && data.order) {
+            data.order.forEach(val => {
+              const item = orderList.querySelector(`.order-item[data-val="${val}"]`);
+              if (item) orderList.appendChild(item);
+            });
+          }
+          const confirmBtn = qBlock.querySelector('button.btn-bronze');
+          if (confirmBtn) confirmBtn.click();
         }
       }
 
       SHEET_ORDER.forEach(s => updateSheetScore(s));
+      updateDiagResults();
       updateBadges(store);
     }
 
@@ -2269,9 +2844,79 @@
       }
     }
 
+    // ===================== Acessibilidade =====================
+    // Reforça a app com atributos ARIA de forma genérica (sem precisar de
+    // editar centenas de perguntas à mão): separadores, diálogos, selects de
+    // correspondência, grupos de opções, setas de ordenação, termos do
+    // glossário e cartões de imagem clicáveis.
+    function enhanceAccessibility() {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', btn.classList.contains('active') ? 'true' : 'false');
+        const tabId = btn.id.replace('tabbtn-', '');
+        btn.setAttribute('aria-controls', tabId);
+      });
+
+      document.querySelectorAll('.section-content').forEach(sec => {
+        sec.setAttribute('role', 'tabpanel');
+        sec.setAttribute('aria-labelledby', 'tabbtn-' + sec.id);
+      });
+
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+      });
+
+      document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.setAttribute('aria-label', 'Fechar');
+      });
+
+      document.querySelectorAll('.match-row').forEach(row => {
+        const label = row.querySelector('span');
+        const selects = row.querySelectorAll('select.custom-select');
+        if (!label || selects.length === 0) return;
+        if (selects.length === 1) {
+          selects[0].setAttribute('aria-label', label.textContent.trim());
+        } else {
+          selects.forEach((sel, idx) => {
+            sel.setAttribute('aria-label', `${label.textContent.trim()} (campo ${idx + 1})`);
+          });
+        }
+      });
+
+      document.querySelectorAll('.question-block').forEach(block => {
+        const titleEl = block.querySelector('.question-title');
+        const optsGroup = block.querySelector('.options-group');
+        if (titleEl && optsGroup) {
+          optsGroup.setAttribute('role', 'group');
+          optsGroup.setAttribute('aria-label', titleEl.textContent.trim());
+        }
+      });
+
+      document.querySelectorAll('.order-controls button').forEach(btn => {
+        btn.setAttribute('aria-label', btn.textContent.trim() === '▲' ? 'Mover para cima' : 'Mover para baixo');
+      });
+
+      document.querySelectorAll('.glossary-term').forEach(term => {
+        term.setAttribute('tabindex', '0');
+      });
+
+      document.querySelectorAll('.image-thumb-card').forEach(card => {
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            card.click();
+          }
+        });
+      });
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       shuffleOptions();
       loadState();
+      enhanceAccessibility();
     });
   </script>
 </body>
