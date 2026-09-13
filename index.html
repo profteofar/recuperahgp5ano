@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperação da Matéria de HGP - 5.º Ano</title>
+  <style>
+    :root {
+      --bg-slate: #23272e;
+      --card-slate: #2d323b;
+      --card-border: #3e4451;
+      --text-main: #f0f2f5;
+      --text-muted: #abb2bf;
+      --bronze: #d19a66;
+      --bronze-hover: #b8824f;
+      --olive-green: #6b8e23;
+      --olive-green-hover: #55721a;
+      --coffee: #5c3a21;
+      --danger: #e06c75;
+      --font-scale: 1rem;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: var(--font-scale);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--coffee), var(--bg-slate));
+      border-bottom: 3px solid var(--bronze);
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-titles h1 { font-size: 1.45rem; color: var(--bronze); letter-spacing: 0.5px; }
+
+    .header-actions { display: flex; gap: 0.8rem; align-items: center; }
+
+    .font-resizer {
+      display: flex;
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+    }
+
+    .btn-resize {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      padding: 0.35rem 0.65rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .btn-resize:hover { background: rgba(255,255,255,0.1); }
+
+    .btn {
+      padding: 0.45rem 0.85rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+    }
+
+    .btn-bronze { background-color: var(--bronze); color: #1e1e1e; }
+    .btn-bronze:hover { background-color: var(--bronze-hover); }
+    .btn-olive { background-color: var(--olive-green); color: white; }
+    .btn-olive:hover { background-color: var(--olive-green-hover); }
+    .btn-outline { background-color: transparent; border: 1px solid var(--bronze); color: var(--bronze); }
+    .btn-outline:hover { background-color: rgba(209, 154, 102, 0.1); }
+    .btn-danger-light { background-color: rgba(224, 108, 117, 0.15); border: 1px solid var(--danger); color: var(--danger); }
+    .btn-danger-light:hover { background-color: rgba(224, 108, 117, 0.3); }
+
+    .badges-bar {
+      background-color: #1c2026;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.5rem 1.5rem;
+      display: flex;
+      gap: 0.8rem;
+      overflow-x: auto;
+      align-items: center;
+    }
+
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: rgba(255,255,255,0.04);
+      color: #636d83;
+      border: 1px dashed #3e4451;
+      white-space: nowrap;
+      transition: all 0.3s;
+    }
+
+    .badge-chip.unlocked {
+      background: linear-gradient(135deg, rgba(209, 154, 102, 0.2), rgba(107, 142, 35, 0.25));
+      color: var(--bronze);
+      border: 1px solid var(--bronze);
+      box-shadow: 0 0 8px rgba(209, 154, 102, 0.25);
+    }
+
+    nav {
+      background-color: var(--card-slate);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.4rem 1rem;
+      display: flex;
+      gap: 0.3rem;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 0.8rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .tab-btn:hover:not(:disabled) {
+      color: var(--text-main);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: var(--bronze);
+      border-bottom: 2px solid var(--bronze);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .tab-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    main {
+      flex: 1;
+      padding: 1.8rem 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-content { display: none; animation: fadeIn 0.3s ease; }
+    .section-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .study-card {
+      background-color: var(--card-slate);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+
+    .study-card h2 {
+      color: var(--bronze);
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.4rem;
+    }
+
+    .progress-bar-container {
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .progress-track {
+      flex: 1;
+      min-width: 170px;
+      height: 12px;
+      background: var(--bg-slate);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--olive-green);
+      transition: width 0.4s ease;
+    }
+
+    .glossary-term {
+      border-bottom: 2px dashed var(--bronze);
+      cursor: help;
+      color: var(--bronze);
+      position: relative;
+      font-weight: 500;
+    }
+
+    .glossary-term:hover::after,
+    .glossary-term:focus::after {
+      content: attr(data-def);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1e1e1e;
+      color: #fff;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      white-space: normal;
+      width: 230px;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      border: 1px solid var(--bronze);
+      line-height: 1.3;
+      pointer-events: none;
+    }
+
+    .image-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin: 1rem 0;
+    }
+
+    .image-thumb-card {
+      background-color: var(--bg-slate);
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px dashed var(--card-border);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+      flex: 1;
+      min-width: 140px;
+      max-width: 250px;
+    }
+
+    .image-thumb-card:hover {
+      transform: scale(1.03);
+      border-color: var(--bronze);
+    }
+
+    .image-thumb-card img {
+      width: 100%;
+      height: 115px;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+    }
+
+    .image-thumb-caption {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .question-block {
+      background-color: rgba(0, 0, 0, 0.18);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 1.1rem;
+      margin-bottom: 1.2rem;
+      position: relative;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .question-title {
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.93rem;
+      flex: 1;
+    }
+
+    .btn-hint {
+      background: rgba(209, 154, 102, 0.12);
+      border: 1px solid var(--bronze);
+      color: var(--bronze);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .btn-hint:hover { background: rgba(209, 154, 102, 0.25); }
+
+    .hint-box {
+      display: none;
+      background-color: rgba(209, 154, 102, 0.08);
+      border-left: 3px solid var(--bronze);
+      padding: 0.5rem 0.8rem;
+      border-radius: 0 4px 4px 0;
+      margin-bottom: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--bronze);
+    }
+    .hint-box.active { display: block; }
+
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .option-btn {
+      background-color: var(--card-slate);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.55rem 0.9rem;
+      border-radius: 4px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--bronze);
+      background-color: rgba(209, 154, 102, 0.08);
+    }
+
+    .option-btn.selected-correct {
+      background-color: var(--olive-green) !important;
+      color: white !important;
+      border-color: var(--olive-green) !important;
+    }
+
+    .option-btn.selected-incorrect {
+      background-color: var(--danger) !important;
+      color: white !important;
+      border-color: var(--danger) !important;
+    }
+
+    select.custom-select {
+      background-color: var(--card-slate);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 0.35rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      margin: 0.25rem 0;
+    }
+
+    .match-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.88rem;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+      margin: 0.35rem 0;
+      cursor: pointer;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--olive-green);
+    }
+
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .order-item {
+      background-color: var(--card-slate);
+      border: 1px solid var(--card-border);
+      padding: 0.6rem 0.9rem;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+    }
+
+    .order-controls button {
+      background-color: var(--bg-slate);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-left: 0.3rem;
+    }
+
+    .feedback-box {
+      margin-top: 0.8rem;
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-size: 0.84rem;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      background-color: rgba(107, 142, 35, 0.2);
+      border-left: 4px solid var(--olive-green);
+      display: block;
+    }
+
+    .feedback-box.incorrect {
+      background-color: rgba(224, 108, 117, 0.2);
+      border-left: 4px solid var(--danger);
+      display: block;
+    }
+
+    .summary-report-card {
+      background-color: rgba(0,0,0,0.25);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin-top: 1.2rem;
+      font-size: 0.85rem;
+    }
+    .summary-report-card h4 {
+      color: var(--bronze);
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-window {
+      background-color: var(--card-slate);
+      border: 1px solid var(--bronze);
+      border-radius: 8px;
+      max-width: 650px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.8rem;
+      position: relative;
+    }
+
+    .modal-image-window {
+      max-width: 900px;
+      text-align: center;
+      padding: 1rem;
+      background-color: var(--card-slate);
+      border: 1px solid var(--bronze);
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .modal-image-window img {
+      max-width: 100%;
+      max-height: 75vh;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
+    .modal-image-caption {
+      margin-top: 0.8rem;
+      color: var(--bronze);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 0.8rem; right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+
+    .certificate-sheet {
+      background: #fff;
+      color: #1a1a1a;
+      border: 8px double var(--coffee);
+      padding: 2.2rem;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+    .certificate-sheet h2 {
+      color: var(--coffee);
+      font-size: 1.7rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .cert-seal {
+      width: 70px;
+      height: 70px;
+      border: 2px solid var(--bronze);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 1rem 0;
+      background: rgba(209,154,102,0.1);
+    }
+
+    .exam-sheet {
+      background-color: #ffffff;
+      color: #222;
+      padding: 1.8rem;
+      border-radius: 8px;
+    }
+
+    .exam-sheet h2 {
+      color: var(--coffee);
+      border-bottom: 2px solid var(--coffee);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) { .exam-grid { grid-template-columns: 1fr; } }
+
+    .exam-topic {
+      border: 1px solid #ddd;
+      padding: 0.8rem;
+      border-radius: 4px;
+      background-color: #fafafa;
+    }
+
+    .exam-topic h3 {
+      font-size: 0.92rem;
+      color: var(--coffee);
+      margin-bottom: 0.3rem;
+    }
+
+    .exam-topic ul {
+      padding-left: 1.2rem;
+      font-size: 0.82rem;
+    }
+
+    footer {
+      background-color: var(--coffee);
+      color: #dcdfe4;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+      border-top: 2px solid var(--bronze);
+      margin-top: auto;
+    }
+
+    /* Regras de Impressão Dedicadas (@media print) */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 11pt !important;
+      }
+      header, nav, footer, .badges-bar, .header-actions, .progress-bar-container,
+      .btn, .btn-hint, .order-controls, .modal-close, .modal-overlay, .no-print {
+        display: none !important;
+      }
+      main {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+
+      /* ===== Modo Certificado: imprime SÓ o certificado =====
+         Esconde explicitamente TODOS os irmãos diretos de #certModal dentro
+         de <main> (fichas 1-10, folha de revisão, guia, imagem ampliada),
+         em vez de confiar apenas em .section-content — isto garante que
+         nada mais consegue "vazar" para a impressão do certificado. */
+      body.printing-certificate main > *:not(#certModal) {
+        display: none !important;
+      }
+      body.printing-certificate #certModal.modal-overlay {
+        position: static !important;
+        background: transparent !important;
+        display: block !important;
+        padding: 0 !important;
+        z-index: 99999 !important;
+      }
+      body.printing-certificate #certModal .modal-window {
+        max-width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        background: #fff !important;
+      }
+      body.printing-certificate .certificate-sheet {
+        border: 4px double #333 !important;
+        margin: 1.5rem auto !important;
+        padding: 2.5rem !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* ===== Modo Folha de Revisão: imprime só a Ficha de Revisão ===== */
+      body:not(.printing-certificate) .section-content {
+        display: none !important;
+      }
+      body:not(.printing-certificate) #tabExam.section-content {
+        display: block !important;
+      }
+      body:not(.printing-certificate) .exam-sheet {
+        border: none !important;
+        padding: 0 !important;
+      }
+      body:not(.printing-certificate) .exam-topic {
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-titles">
+      <h1>Recuperação da Matéria de HGP - 5.º Ano</h1>
+    </div>
+    <div class="header-actions">
+      <div class="font-resizer" title="Ajustar Tamanho de Letra">
+        <button class="btn-resize" onclick="changeFontSize(-1)">A-</button>
+        <button class="btn-resize" onclick="changeFontSize(1)">A+</button>
+      </div>
+      <button class="btn btn-outline" onclick="openCertModal()">🎓 Ver Diploma</button>
+      <button class="btn btn-outline" onclick="openGuideModal()">📖 Guia</button>
+      <button class="btn btn-olive" onclick="resetProgress()">🔄 Repor Tudo</button>
+    </div>
+  </header>
+
+  <div class="badges-bar">
+    <span style="font-size:0.75rem; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">Crachás:</span>
+    <span class="badge-chip" id="badge-prehistoria" title="Conclui as Fichas 1 e 2">🔒 Explorador da Pré-História</span>
+    <span class="badge-chip" id="badge-fundador" title="Conclui a Ficha 6">🔒 Fundador do Reino</span>
+    <span class="badge-chip" id="badge-navegador" title="Conclui a Ficha 9">🔒 Navegador dos Mares</span>
+    <span class="badge-chip" id="badge-restaurador" title="Conclui a Ficha 10">🔒 Restaurador da Pátria</span>
+  </div>
+
+  <nav id="navTabs">
+    <button class="tab-btn active" id="tabbtn-tab1" onclick="switchTab('tab1')">1. Comunidades Recoletoras</button>
+    <button class="tab-btn" id="tabbtn-tab2" onclick="switchTab('tab2')" disabled>🔒 2. Comunidades Agropastoris</button>
+    <button class="tab-btn" id="tabbtn-tab3" onclick="switchTab('tab3')" disabled>🔒 3. Povos Mediterrânicos</button>
+    <button class="tab-btn" id="tabbtn-tab4" onclick="switchTab('tab4')" disabled>🔒 4. Romanos na P. Ibérica</button>
+    <button class="tab-btn" id="tabbtn-tab5" onclick="switchTab('tab5')" disabled>🔒 5. Os Muçulmanos</button>
+    <button class="tab-btn" id="tabbtn-tab6" onclick="switchTab('tab6')" disabled>🔒 6. Formação de Portugal</button>
+    <button class="tab-btn" id="tabbtn-tab7" onclick="switchTab('tab7')" disabled>🔒 7. Portugal no Século XIII</button>
+    <button class="tab-btn" id="tabbtn-tab8" onclick="switchTab('tab8')" disabled>🔒 8. 1383-1385 Revolução</button>
+    <button class="tab-btn" id="tabbtn-tab9" onclick="switchTab('tab9')" disabled>🔒 9. Séculos XV e XVI</button>
+    <button class="tab-btn" id="tabbtn-tab10" onclick="switchTab('tab10')" disabled>🔒 10. União à Restauração</button>
+    <button class="tab-btn" id="tabbtn-tabExam" onclick="switchTab('tabExam')">📄 Folha de Revisão</button>
+  </nav>
+
+  <main>
+    <div class="modal-overlay" id="userGuideModal">
+      <div class="modal-window">
+        <button class="modal-close" onclick="closeGuideModal()">&times;</button>
+        <h2 style="color: var(--bronze); margin-bottom: 0.8rem;">Guia do Utilizador</h2>
+        <p style="margin-bottom: 0.8rem; font-size: 0.88rem;">Aplicação educativa de recuperação da matéria de HGP para o 5.º ano:</p>
+        <ul style="padding-left: 1.2rem; font-size: 0.84rem; display: flex; flex-direction: column; gap: 0.4rem;">
+          <li><strong>Progressão Condicionada (≥ 70%):</strong> É necessário alcançar pelo menos 70% de acertos para desbloquear a ficha seguinte.</li>
+          <li><strong>Tentar Novamente:</strong> Se não atingires a meta, usa o botão "Tentar Novamente esta Ficha" para repetir apenas esse bloco.</li>
+          <li><strong>💡 Pedir Pista:</strong> Podes consultar pistas pedagógicas nas questões mais desafiantes.</li>
+          <li><strong>Glossário Rápido:</strong> Palavras sublinhadas a tracejado mostram a definição ao passar o rato ou tocar.</li>
+          <li><strong>Diploma de Conclusão:</strong> Ao finalizares as fichas, podes emitir e imprimir o teu Certificado de Estudo.</li>
+        </ul>
+        <button class="btn btn-bronze" style="margin-top: 1.2rem; width: 100%;" onclick="closeGuideModal()">Começar</button>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="imageModal" onclick="closeImageModal()">
+      <div class="modal-image-window" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeImageModal()">&times;</button>
+        <img id="modalImg" src="" alt="Imagem Ampliada">
+        <div class="modal-image-caption" id="modalCaption"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="certModal">
+      <div class="modal-window" style="max-width: 780px;">
+        <button class="modal-close" onclick="closeCertModal()">&times;</button>
+        <div class="certificate-sheet" id="printCertArea">
+          <div class="cert-seal">🎖️</div>
+          <h2>Certificado de Aproveitamento</h2>
+          <p style="font-size: 1rem; color: #555;">História e Geografia de Portugal — 5.º Ano</p>
+          <div style="margin: 1.5rem 0;">
+            <p>Certifica-se que o(a) aluno(a):</p>
+            <input type="text" id="studentNameInput" placeholder="Escreve o teu nome completo" style="font-size: 1.25rem; font-weight: bold; border: none; border-bottom: 2px solid var(--coffee); text-align: center; width: 80%; padding: 0.3rem; margin: 0.5rem 0; color: var(--coffee); outline: none;">
+            <p style="font-size: 0.95rem; margin-top: 0.6rem;">completou com sucesso as atividades de recuperação e consolidação curricular, demonstrando domínio das fontes históricas, cronologia e conceitos-chave.</p>
+          </div>
+          <div style="display: flex; justify-content: space-around; margin-top: 1.8rem; font-size: 0.85rem; color: #444;">
+            <div><strong>Data de Conclusão:</strong><br><span id="certDateSpan">--/--/----</span></div>
+            <div><strong>Média Global:</strong><br><span id="certScoreSpan" style="font-weight:bold; color:var(--olive-green);">0%</span></div>
+            <div><strong>Validação:</strong><br>O Professor / Encarregado de Educação</div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;" class="no-print">
+          <button class="btn btn-olive" onclick="printCertificate()">🖨️ Imprimir Certificado</button>
+          <button class="btn btn-outline" onclick="closeCertModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 1 ================= -->
+    <div id="tab1" class="section-content active">
+      <div class="study-card">
+        <h2>Ficha de Recuperação 1: As Comunidades Recoletoras</h2>
+        <div class="progress-bar-container">
+          <span id="score-f1">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f1"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f1')">🔄 Tentar Novamente</button>
+          <span id="lock-f1">🔒 Ficha 2 Bloqueada</span>
+        </div>
+
+        <p style="font-size:0.85rem; margin-bottom:0.6rem;">
+          Os primeiros grupos humanos eram <span class="glossary-term" data-def="Grupo que obtém o seu sustento colhendo diretamente da Natureza (caça, pesca e plantas silvestres).">recoletores</span> e viviam como <span class="glossary-term" data-def="Povo que não tiene habitação fixa e desloca-se constantemente à procura de alimento.">nómadas</span>, abrigando-se em cavernas.
+        </p>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img1.jpg', 'Reconstituição da vida de uma comunidade recoletora')">
+            <img src="./img1.jpg" alt="Vida Recoleta" onerror="this.alt='Vida Recoleta'">
+            <div class="image-thumb-caption">Vida de Comunidade Recoletora</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img2.jpg', 'Instrumentos do Paleolítico: Biface, Arpão e Propulsor')">
+            <img src="./img2.jpg" alt="Instrumentos" onerror="this.alt='Instrumentos'">
+            <div class="image-thumb-caption">Instrumentos de Caça e Corte</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img3.jpg', 'Descoberta e produção do fogo')">
+            <img src="./img3.jpg" alt="O Fogo" onerror="this.alt='O Fogo'">
+            <div class="image-thumb-caption">O Domínio do Fogo</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img4.jpg', 'A arte das comunidades recoletoras (Pintura e Gravura Rupestres)')">
+            <img src="./img4.jpg" alt="Arte Rupestre" onerror="this.alt='Arte Rupestre'">
+            <div class="image-thumb-caption">Arte Rupestre</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f1" data-qid="f1_q1">
+            <div class="question-header">
+              <div class="question-title">Atenta na imagem da reconstituição da vida de uma comunidade recoletora. Completa a legenda com as principais atividades assinaladas:</div>
+              <button class="btn-hint" onclick="toggleHint('hint-f1-1')">💡 Pedir Pista</button>
+            </div>
+            <div class="hint-box" id="hint-f1-1">Repara nas personagens junto ao rio, no transporte de um animal abatido e na colheita de plantas.</div>
+            <div class="match-row"><span>Zona A:</span><select class="custom-select" id="f1_q1_a"><option value="">-- Atividade --</option><option value="Pesca">Pesca</option><option value="Caca">Caça</option><option value="Recolecao">Recoleção</option></select></div>
+            <div class="match-row"><span>Zona B:</span><select class="custom-select" id="f1_q1_b"><option value="">-- Atividade --</option><option value="Pesca">Pesca</option><option value="Caca">Caça</option><option value="Recolecao">Recoleção</option></select></div>
+            <div class="match-row"><span>Zona C:</span><select class="custom-select" id="f1_q1_c"><option value="">-- Atividade --</option><option value="Pesca">Pesca</option><option value="Caca">Caça</option><option value="Recolecao">Recoleção</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f1', 'f1_q1', {f1_q1_a: 'Caca', f1_q1_b: 'Recolecao', f1_q1_c: 'Pesca'}, 'Correto! A corresponde à Caça, B à Recoleção e C à Pesca.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f1_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q21">
+            <div class="question-header">
+              <div class="question-title">As primeiras comunidades alimentavam-se do que a natureza lhes dava; eram, por isso, …</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f1', 'f1_q21', this, 'Correto! Eram recoletoras.')">recoletoras.</button>
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q21', this, 'Incorreto. As comunidades produtoras produzem o seu alimento com agricultura.')">produtoras.</button>
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q21', this, 'Incorreto. Sedentárias significa que têm casa fixa.')">sedentárias.</button>
+            </div>
+            <div class="feedback-box" id="fb-f1_q21"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q22">
+            <div class="question-header">
+              <div class="question-title">As primeiras comunidades eram nómadas, porque…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q22', this, 'Incorreto. Permanecer no mesmo lugar é sedentarismo.')">permaneciam sempre no mesmo lugar.</button>
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q22', this, 'Incorreto. Eles ainda não conheciam a agricultura.')">praticavam a agricultura.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f1', 'f1_q22', this, 'Correto! Não viviam sempre no mesmo sítio.')">não viviam sempre no mesmo sítio.</button>
+            </div>
+            <div class="feedback-box" id="fb-f1_q22"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q3">
+            <div class="question-header">
+              <div class="question-title">Associa os instrumentos apresentados aos respetivos nomes:</div>
+            </div>
+            <div class="match-row"><span>Instrumento A:</span><select class="custom-select" id="f1_q3_a"><option value="">-- Nome --</option><option value="Propulsor">Propulsor</option><option value="Biface">Biface</option><option value="Arpao">Arpão</option></select></div>
+            <div class="match-row"><span>Instrumento B:</span><select class="custom-select" id="f1_q3_b"><option value="">-- Nome --</option><option value="Propulsor">Propulsor</option><option value="Biface">Biface</option><option value="Arpao">Arpão</option></select></div>
+            <div class="match-row"><span>Instrumento C:</span><select class="custom-select" id="f1_q3_c"><option value="">-- Nome --</option><option value="Propulsor">Propulsor</option><option value="Biface">Biface</option><option value="Arpao">Arpão</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f1', 'f1_q3', {f1_q3_a: 'Biface', f1_q3_b: 'Arpao', f1_q3_c: 'Propulsor'}, 'Correto! A: Biface. B: Arpão. C: Propulsor.')">Validar Associação</button>
+            <div class="feedback-box" id="fb-f1_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q4">
+            <div class="question-header">
+              <div class="question-title">Preenche o esquema selecionando as vantagens da descoberta e produção do fogo:</div>
+            </div>
+            <label class="checkbox-item"><input type="checkbox" id="f1_q4_0"> Aquecer e iluminar as cavernas</label>
+            <label class="checkbox-item"><input type="checkbox" id="f1_q4_1"> Afugentar animais ferozes</label>
+            <label class="checkbox-item"><input type="checkbox" id="f1_q4_2"> Cozinhar os alimentos</label>
+            <label class="checkbox-item"><input type="checkbox" id="f1_q4_3"> Contribuir para o desenvolvimento da linguagem</label>
+            <label class="checkbox-item"><input type="checkbox" id="f1_q4_4"> Fundição de moedas de prata</label>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('f1', 'f1_q4', [0,1,2,3], 'Correto! Aquecer e iluminar as cavernas; afugentar animais ferozes; cozinhar os alimentos; desenvolvimento da linguagem.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f1_q4"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q51">
+            <div class="question-header">
+              <div class="question-title">As comunidades recoletoras desenvolveram a arte…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q51', this, 'Incorreto. A arte contemporânea é da atualidade.')">contemporânea.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f1', 'f1_q51', this, 'Correto! Desenvolveram a arte rupestre.')">rupestre.</button>
+            </div>
+            <div class="feedback-box" id="fb-f1_q51"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q52">
+            <div class="question-header">
+              <div class="question-title">Classifica as afirmações como verdadeiras (V) ou falsas (F):</div>
+            </div>
+            <div class="match-row"><span>Os arqueólogos acreditam que as gravuras e pinturas tinham significado mágico e religioso:</span><select class="custom-select" id="f1_q52_a"><option value="">-- V/F --</option><option value="V">V</option><option value="F">F</option></select></div>
+            <div class="match-row"><span>Estas representações eram feitas na terra:</span><select class="custom-select" id="f1_q52_b"><option value="">-- V/F --</option><option value="V">V</option><option value="F">F</option></select></div>
+            <div class="match-row"><span>O principal tema representado era o fogo:</span><select class="custom-select" id="f1_q52_c"><option value="">-- V/F --</option><option value="V">V</option><option value="F">F</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f1', 'f1_q52', {f1_q52_a: 'V', f1_q52_b: 'F', f1_q52_c: 'F'}, 'Correto! A primeira é verdadeira; a segunda é falsa (eram feitas em rochas e paredes de grutas) e a terceira é falsa (eram animais e caça).')">Validar Afirmações</button>
+            <div class="feedback-box" id="fb-f1_q52"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q61">
+            <div class="question-header">
+              <div class="question-title">A Arqueologia é uma ciência que tem como objetivo…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q61', this, 'Incorreto. A Arqueologia estuda e preserva a história, não comercializa património.')">vender os vestígios deixados pelo ser humano.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f1', 'f1_q61', this, 'Correto! Encontra e estuda os vestígios deixados pelos nossos antepassados.')">encontrar e estudar os vestígios deixados pelos nossos antepassados.</button>
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q61', this, 'Incorreto. O seu propósito é proteger e interpretar os vestígios.')">destruir os vestígios do passado.</button>
+            </div>
+            <div class="feedback-box" id="fb-f1_q61"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f1" data-qid="f1_q62">
+            <div class="question-header">
+              <div class="question-title">As fontes históricas podem ser…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q62', this, 'Incorreto. Existem também testemunhos orais, tradições e lendas.')">apenas materiais.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f1', 'f1_q62', this, 'Correto! Podem ser materiais e imateriais.')">materiais e imateriais.</button>
+              <button class="option-btn" onclick="checkAnswer('f1', 'f1_q62', this, 'Incorreto. Grande parte das fontes conservadas são objetos e documentos físicos.')">apenas imateriais.</button>
+            </div>
+            <div class="feedback-box" id="fb-f1_q62"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f1" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f1">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 2 ================= -->
+    <div id="tab2" class="section-content">
+      <div class="study-card">
+        <h2>As Comunidades Agropastoris</h2>
+        <div class="progress-bar-container">
+          <span id="score-f2">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f2"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f2')">🔄 Tentar Novamente</button>
+          <span id="lock-f2">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <p style="font-size:0.85rem; margin-bottom:0.6rem;">
+          Com a agricultura e a pastorícia, os homens tornaram-se <span class="glossary-term" data-def="Povo que vive permanentemente no mesmo local, habitando aldeamentos.">sedentários</span> e construíram <span class="glossary-term" data-def="Grandes monumentos de pedra como dólmenes e menires construídos para rituais ou túmulos.">megálitos</span>.
+        </p>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img5.jpg', 'Reconstituição da vida de uma comunidade agropastoril')">
+            <img src="./img5.jpg" alt="Aldeamento" onerror="this.alt='Aldeamento'">
+            <div class="image-thumb-caption">Vida em Comunidade Agropastoril</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img6.jpg', 'Seara de cereais e início da agricultura neolítica')">
+            <img src="./img6.jpg" alt="Cereais" onerror="this.alt='Cereais'">
+            <div class="image-thumb-caption">Seara e Culturas Agrícolas</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f2" data-qid="f2_q1">
+            <div class="question-header">
+              <div class="question-title">Atenta na imagem da comunidade agropastoril. Completa a legenda com as atividades assinaladas de A a F:</div>
+              <button class="btn-hint" onclick="toggleHint('hint-f2-1')">💡 Pedir Pista</button>
+            </div>
+            <div class="hint-box" id="hint-f2-1">Observa o pastoreio, a tecelagem no tear, a moagem com pedras, a foice de colheita, o barro moldado e o entrançar de cestos.</div>
+            <div class="match-row"><span>Zona A:</span><select class="custom-select" id="f2_q1_a"><option value="">--</option><option value="Pastoricia">Pastorícia</option><option value="Tecelagem">Tecelagem</option><option value="Moagem">Moagem</option><option value="Agricultura">Agricultura</option><option value="Ceramica">Cerâmica</option><option value="Cestaria">Cestaria</option></select></div>
+            <div class="match-row"><span>Zona B:</span><select class="custom-select" id="f2_q1_b"><option value="">--</option><option value="Pastoricia">Pastorícia</option><option value="Tecelagem">Tecelagem</option><option value="Moagem">Moagem</option><option value="Agricultura">Agricultura</option><option value="Ceramica">Cerâmica</option><option value="Cestaria">Cestaria</option></select></div>
+            <div class="match-row"><span>Zona C:</span><select class="custom-select" id="f2_q1_c"><option value="">--</option><option value="Pastoricia">Pastorícia</option><option value="Tecelagem">Tecelagem</option><option value="Moagem">Moagem</option><option value="Agricultura">Agricultura</option><option value="Ceramica">Cerâmica</option><option value="Cestaria">Cestaria</option></select></div>
+            <div class="match-row"><span>Zona D:</span><select class="custom-select" id="f2_q1_d"><option value="">--</option><option value="Pastoricia">Pastorícia</option><option value="Tecelagem">Tecelagem</option><option value="Moagem">Moagem</option><option value="Agricultura">Agricultura</option><option value="Ceramica">Cerâmica</option><option value="Cestaria">Cestaria</option></select></div>
+            <div class="match-row"><span>Zona E:</span><select class="custom-select" id="f2_q1_e"><option value="">--</option><option value="Pastoricia">Pastorícia</option><option value="Tecelagem">Tecelagem</option><option value="Moagem">Moagem</option><option value="Agricultura">Agricultura</option><option value="Ceramica">Cerâmica</option><option value="Cestaria">Cestaria</option></select></div>
+            <div class="match-row"><span>Zona F:</span><select class="custom-select" id="f2_q1_f"><option value="">--</option><option value="Pastoricia">Pastorícia</option><option value="Tecelagem">Tecelagem</option><option value="Moagem">Moagem</option><option value="Agricultura">Agricultura</option><option value="Ceramica">Cerâmica</option><option value="Cestaria">Cestaria</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f2', 'f2_q1', {f2_q1_a: 'Pastoricia', f2_q1_b: 'Tecelagem', f2_q1_c: 'Moagem', f2_q1_d: 'Agricultura', f2_q1_e: 'Ceramica', f2_q1_f: 'Cestaria'}, 'Correto! A: Pastorícia. B: Tecelagem. C: Moagem. D: Agricultura. E: Cerâmica. F: Cestaria.')">Confirmar Legenda</button>
+            <div class="feedback-box" id="fb-f2_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f2" data-qid="f2_q21">
+            <div class="question-header">
+              <div class="question-title">As comunidades agropastoris produziam o seu alimento; eram, por isso, …</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f2', 'f2_q21', this, 'Incorreto.')">recoletoras.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f2', 'f2_q21', this, 'Correto! Eram produtoras.')">produtoras.</button>
+              <button class="option-btn" onclick="checkAnswer('f2', 'f2_q21', this, 'Incorreto.')">nómadas.</button>
+            </div>
+            <div class="feedback-box" id="fb-f2_q21"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f2" data-qid="f2_q22">
+            <div class="question-header">
+              <div class="question-title">As comunidades agropastoris eram sedentárias, porque…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f2', 'f2_q22', this, 'Correto! Fixaram-se e passaram a viver mais tempo no mesmo lugar.')">fixaram-se e passaram a viver mais tempo no mesmo lugar.</button>
+              <button class="option-btn" onclick="checkAnswer('f2', 'f2_q22', this, 'Incorreto.')">deslocavam-se, constantemente, de região em região.</button>
+              <button class="option-btn" onclick="checkAnswer('f2', 'f2_q22', this, 'Incorreto.')">não conseguiam fixar-se num local.</button>
+            </div>
+            <div class="feedback-box" id="fb-f2_q22"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f2" data-qid="f2_q3">
+            <div class="question-header">
+              <div class="question-title">Associa as técnicas desenvolvidas pelas comunidades agropastoris às respetivas descrições:</div>
+            </div>
+            <div class="match-row"><span>Moagem:</span><select class="custom-select" id="f2_q3_1"><option value="">--</option><option value="1">Fabrico de tecidos de lã ou linho</option><option value="2">Fabrico de utensílios para guardar e transportar alimentos</option><option value="3">Trituração de cereais para obter farinha</option></select></div>
+            <div class="match-row"><span>Cerâmica e cestaria:</span><select class="custom-select" id="f2_q3_2"><option value="">--</option><option value="1">Fabrico de tecidos de lã ou linho</option><option value="2">Fabrico de utensílios para guardar e transportar alimentos</option><option value="3">Trituração de cereais para obter farinha</option></select></div>
+            <div class="match-row"><span>Tecelagem:</span><select class="custom-select" id="f2_q3_3"><option value="">--</option><option value="1">Fabrico de tecidos de lã ou linho</option><option value="2">Fabrico de utensílios para guardar e transportar alimentos</option><option value="3">Trituração de cereais para obter farinha</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f2', 'f2_q3', {f2_q3_1: '3', f2_q3_2: '2', f2_q3_3: '1'}, 'Correto! A - 3 (Moagem); B - 2 (Cerâmica e cestaria); C - 1 (Tecelagem).')">Confirmar</button>
+            <div class="feedback-box" id="fb-f2_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f2" data-qid="f2_q4">
+            <div class="question-header">
+              <div class="question-title">Seleciona as palavras corretas sobre os monumentos megalíticos:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              As comunidades construíram grandes monumentos de <select class="custom-select" id="f2_q4_a"><option value="">--</option><option value="pedra">pedra</option><option value="tijolo">tijolo</option></select>.<br>
+              O <select class="custom-select" id="f2_q4_b"><option value="">--</option><option value="cromeleque">cromeleque</option><option value="menir">menir</option></select> é uma pedra isolada enterrada verticalmente.<br>
+              <select class="custom-select" id="f2_q4_c"><option value="">--</option><option value="Os cromeleques">Os cromeleques</option><option value="As antas">As antas</option></select> são menires dispostos em círculo.<br>
+              Eram locais onde se praticavam rituais <select class="custom-select" id="f2_q4_d"><option value="">--</option><option value="religiosos">religiosos</option><option value="desportivos">desportivos</option></select>.<br>
+              Os <select class="custom-select" id="f2_q4_e"><option value="">--</option><option value="cromeleques">cromeleques</option><option value="dolmens">dólmens</option></select> seriam locais onde enterravam os mortos.<br>
+              São também conhecidos por <select class="custom-select" id="f2_q4_f"><option value="">--</option><option value="antas">antas</option><option value="gravuras">gravuras</option></select>.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f2', 'f2_q4', ['pedra', 'menir', 'Os cromeleques', 'religiosos', 'dolmens', 'antas'], 'Correto! a) pedra; b) menir; c) Os cromeleques; d) religiosos; e) dólmens; f) antas.')">Validar</button>
+            <div class="feedback-box" id="fb-f2_q4"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f2" data-qid="f2_q5">
+            <div class="question-header">
+              <div class="question-title">Descobre os povos e a razão da sua fixação na Península Ibérica:</div>
+            </div>
+            <div class="match-row">
+              <span>Dois povos que passaram a habitar a Península no século V a.C.:</span>
+              <select class="custom-select" id="f2_q5_povos"><option value="">--</option><option value="Iberos e Celtas">Iberos e Celtas</option><option value="Gregos e Fenicios">Gregos e Fenícios</option></select>
+            </div>
+            <div class="match-row">
+              <span>Por que motivo esses povos se dirigiram para o território ibérico?</span>
+              <select class="custom-select" id="f2_q5_motivo"><option value="">--</option><option value="recursos">Porque foram atraídos pelos recursos e riquezas naturais existentes.</option><option value="guerra">Porque fugiam de maremotos no norte.</option></select>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f2', 'f2_q5', {f2_q5_povos: 'Iberos e Celtas', f2_q5_motivo: 'recursos'}, 'Correto! Tratava-se dos Iberos e dos Celtas, atraídos pelos recursos e riquezas naturais.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f2_q5"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f2" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f2">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 3 ================= -->
+    <div id="tab3" class="section-content">
+      <div class="study-card">
+        <h2>Os Povos Mediterrânicos na Península Ibérica</h2>
+        <div class="progress-bar-container">
+          <span id="score-f3">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f3"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f3')">🔄 Tentar Novamente</button>
+          <span id="lock-f3">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <p style="font-size:0.85rem; margin-bottom:0.6rem;">
+          Estes povos fundaram entrepostos comerciais ou <span class="glossary-term" data-def="Povoado ou porto comercial costeiro para efetuar trocas de mercadorias.">feitorias</span> para trocar produtos por metais peninsulares.
+        </p>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f3" data-qid="f3_q1">
+            <div class="question-header">
+              <div class="question-title">Completa o quadro sobre os povos que contactaram com os habitantes da Península Ibérica:</div>
+              <button class="btn-hint" onclick="toggleHint('hint-f3-1')">💡 Pedir Pista</button>
+            </div>
+            <div class="hint-box" id="hint-f3-1">Os Fenícios trouxeram o alfabeto no século X a.C.; os Gregos a moeda no século VIII a.C. e os Cartagineses o salgamento no século V a.C.</div>
+            <p><strong>Fenícios:</strong></p>
+            <div class="match-row"><span>Origem / Século / Atividade / Herança:</span>
+              <select class="custom-select" id="f3_fen_1"><option value="">Origem</option><option value="Fenicia">Fenícia</option><option value="Grecia">Grécia</option><option value="Cartago">Cartago</option></select>
+              <select class="custom-select" id="f3_fen_2"><option value="">Século</option><option value="X a. C.">X a. C.</option><option value="VIII a. C.">VIII a. C.</option><option value="V a. C.">V a. C.</option></select>
+              <select class="custom-select" id="f3_fen_3"><option value="">Atividade</option><option value="Comercio">Comércio</option></select>
+              <select class="custom-select" id="f3_fen_4"><option value="">Herança</option><option value="Alfabeto">Alfabeto</option><option value="Moeda">Utilização da moeda</option><option value="Sal">Conservação pelo sal</option></select>
+            </div>
+
+            <p style="margin-top:0.6rem;"><strong>Gregos:</strong></p>
+            <div class="match-row"><span>Origem / Século / Atividade / Herança:</span>
+              <select class="custom-select" id="f3_gre_1"><option value="">Origem</option><option value="Fenicia">Fenícia</option><option value="Grecia">Grécia</option><option value="Cartago">Cartago</option></select>
+              <select class="custom-select" id="f3_gre_2"><option value="">Século</option><option value="X a. C.">X a. C.</option><option value="VIII a. C.">VIII a. C.</option><option value="V a. C.">V a. C.</option></select>
+              <select class="custom-select" id="f3_gre_3"><option value="">Atividade</option><option value="Comercio">Comércio</option></select>
+              <select class="custom-select" id="f3_gre_4"><option value="">Herança</option><option value="Alfabeto">Alfabeto</option><option value="Moeda">Utilização da moeda</option><option value="Sal">Conservação pelo sal</option></select>
+            </div>
+
+            <p style="margin-top:0.6rem;"><strong>Cartagineses:</strong></p>
+            <div class="match-row"><span>Origem / Século / Atividade / Herança:</span>
+              <select class="custom-select" id="f3_car_1"><option value="">Origem</option><option value="Fenicia">Fenícia</option><option value="Grecia">Grécia</option><option value="Cartago">Cartago</option></select>
+              <select class="custom-select" id="f3_car_2"><option value="">Século</option><option value="X a. C.">X a. C.</option><option value="VIII a. C.">VIII a. C.</option><option value="V a. C.">V a. C.</option></select>
+              <select class="custom-select" id="f3_car_3"><option value="">Atividade</option><option value="Comercio">Comércio</option></select>
+              <select class="custom-select" id="f3_car_4"><option value="">Herança</option><option value="Alfabeto">Alfabeto</option><option value="Moeda">Utilização da moeda</option><option value="Sal">Conservação pelo sal</option></select>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f3', 'f3_q1', ['Fenicia','X a. C.','Comercio','Alfabeto','Grecia','VIII a. C.','Comercio','Moeda','Cartago','V a. C.','Comercio','Sal'], 'Correto! Fenícios: Fenícia, X a. C., Comércio, Alfabeto. Gregos: Grécia, VIII a. C., Comércio, Utilização da moeda. Cartagineses: Cartago, V a. C., Comércio, Técnica de conservação de alimentos pelo sal.')">Validar Quadro</button>
+            <div class="feedback-box" id="fb-f3_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f3" data-qid="f3_q21">
+            <div class="question-header">
+              <div class="question-title">Os fenícios, os gregos e os cartagineses vieram para a Península Ibérica…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f3', 'f3_q21', this, 'Incorreto.')">porque precisavam de mais população.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f3', 'f3_q21', this, 'Correto! Atraídos pelas suas riquezas naturais.')">atraídos pelas riquezas naturais.</button>
+              <button class="option-btn" onclick="checkAnswer('f3', 'f3_q21', this, 'Incorreto.')">porque se sentiam muito sozinhos.</button>
+            </div>
+            <div class="feedback-box" id="fb-f3_q21"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f3" data-qid="f3_q22">
+            <div class="question-header">
+              <div class="question-title">Estes povos mediterrânicos procuravam trocar os seus produtos por…</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" onclick="checkAnswer('f3', 'f3_q22', this, 'Incorreto.')">chá.</button>
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f3', 'f3_q22', this, 'Correto! Metais preciosos.')">metais preciosos.</button>
+              <button class="option-btn" onclick="checkAnswer('f3', 'f3_q22', this, 'Incorreto.')">café.</button>
+            </div>
+            <div class="feedback-box" id="fb-f3_q22"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f3" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f3">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 4 ================= -->
+    <div id="tab4" class="section-content">
+      <div class="study-card">
+        <h2>Os Romanos na Península Ibérica</h2>
+        <div class="progress-bar-container">
+          <span id="score-f4">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f4"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f4')">🔄 Tentar Novamente</button>
+          <span id="lock-f4">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <p style="font-size:0.85rem; margin-bottom:0.6rem;">
+          O cristianismo tornou-se numa religião <span class="glossary-term" data-def="Religião que acredita na existência de um único Deus.">monoteísta</span> oficial do Império Romano.
+        </p>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img7.jpg', 'O Império Romano no século II e Legionário Romano')">
+            <img src="./img7.jpg" alt="Império Romano" onerror="this.alt='Império Romano'">
+            <div class="image-thumb-caption">Império Romano e Legionário</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f4" data-qid="f4_q1">
+            <div class="question-header">
+              <div class="question-title">Atenta no mapa do Império Romano e no texto sobre a vitória sobre os lusitanos:</div>
+            </div>
+            <div class="match-row"><span>Local de origem dos romanos:</span><select class="custom-select" id="f4_q1_1"><option value="">--</option><option value="Roma">Roma</option><option value="Hispania">Hispânia</option></select></div>
+            <div class="match-row"><span>Três continentes onde se estendiam os territórios:</span><select class="custom-select" id="f4_q1_2"><option value="">--</option><option value="correto">Europa, Ásia e África</option><option value="errado">Europa e América</option></select></div>
+            <div class="match-row"><span>Designação atribuída ao mar Mediterrâneo:</span><select class="custom-select" id="f4_q1_3"><option value="">--</option><option value="Mare nostrum">Mare nostrum</option><option value="Mare romanum">Mare romanum</option></select></div>
+            <div class="match-row"><span>Nome atribuído à Península Ibérica neste período:</span><select class="custom-select" id="f4_q1_4"><option value="">--</option><option value="Hispania">Hispânia</option><option value="Lusitania">Lusitânia</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f4', 'f4_q1', {f4_q1_1: 'Roma', f4_q1_2: 'correto', f4_q1_3: 'Mare nostrum', f4_q1_4: 'Hispania'}, 'Correto! Origem: Roma. Continentes: Europa, Ásia e África. Mar: Mare nostrum. Nome: Hispânia.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f4_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f4" data-qid="f4_q15">
+            <div class="question-header">
+              <div class="question-title">Completa a frase sobre a vitória sobre os lusitanos:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              A conquista romana da Península Ibérica foi 
+              <select class="custom-select" id="f4_q15_1"><option value="">-- Escolhe --</option><option value="rapida">rápida</option><option value="lenta">lenta</option></select>, 
+              devido à 
+              <select class="custom-select" id="f4_q15_2"><option value="">-- Escolhe --</option><option value="resistencia">resistência</option><option value="fraqueza">fraqueza</option></select> 
+              de alguns povos, nomeadamente dos 
+              <select class="custom-select" id="f4_q15_3"><option value="">-- Escolhe --</option><option value="lusitanos">lusitanos</option><option value="gregos">gregos</option></select>.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f4', 'f4_q15', ['lenta', 'resistencia', 'lusitanos'], 'Correto! Foi lenta, devido à resistência de alguns povos, nomeadamente dos lusitanos.')">Validar</button>
+            <div class="feedback-box" id="fb-f4_q15"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f4" data-qid="f4_q151">
+            <div class="question-header">
+              <div class="question-title">Associa os elementos aos Romanos ou aos Lusitanos:</div>
+            </div>
+            <div class="match-row"><span>Praticavam o comércio com base na utilização da moeda:</span><select class="custom-select" id="f4_as_1"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>A sua economia era baseada na agricultura, pastorícia, pesca e metalurgia:</span><select class="custom-select" id="f4_as_2"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>Faziam emboscadas:</span><select class="custom-select" id="f4_as_3"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>Estavam organizados em tribos, sem unidade política:</span><select class="custom-select" id="f4_as_4"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>Prática comercial baseada na troca direta de produtos:</span><select class="custom-select" id="f4_as_5"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>Tinham uma economia urbana, comercial e monetária:</span><select class="custom-select" id="f4_as_6"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>Formaram um império:</span><select class="custom-select" id="f4_as_7"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <div class="match-row"><span>Tinham um exército disciplinado e bem armado:</span><select class="custom-select" id="f4_as_8"><option value="">--</option><option value="A">Romanos</option><option value="B">Lusitanos</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f4', 'f4_q151', {f4_as_1:'A', f4_as_2:'B', f4_as_3:'B', f4_as_4:'B', f4_as_5:'B', f4_as_6:'A', f4_as_7:'A', f4_as_8:'A'}, 'Correto! Romanos: moeda, economia urbana, império e exército disciplinado. Lusitanos: emboscadas, tribos sem unidade e economia agropastoril.')">Confirmar Associação</button>
+            <div class="feedback-box" id="fb-f4_q151"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f4" data-qid="f4_q2">
+            <div class="question-header">
+              <div class="question-title">Classifica as afirmações sobre a romanização como verdadeiras ou falsas:</div>
+            </div>
+            <div class="match-row"><span>O exército romano era pequeno e mal organizado:</span><select class="custom-select" id="f4_q2_a"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>A romanização é a influência exercida pelos romanos sobre os povos conquistados:</span><select class="custom-select" id="f4_q2_b"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>Um dos fatores que possibilitou a romanização foi a ação do exército romano:</span><select class="custom-select" id="f4_q2_c"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>A língua divulgada pelos romanos foi o árabe:</span><select class="custom-select" id="f4_q2_d"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>As estradas romanas dificultaram a circulação de pessoas e mercadorias:</span><select class="custom-select" id="f4_q2_e"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>As cidades romanas eram construídas à imagem de Lisboa:</span><select class="custom-select" id="f4_q2_f"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f4', 'f4_q2', {f4_q2_a:'F', f4_q2_b:'V', f4_q2_c:'V', f4_q2_d:'F', f4_q2_e:'F', f4_q2_f:'F'}, 'Correto! Apenas a segunda e a terceira afirmações são verdadeiras.')">Validar</button>
+            <div class="feedback-box" id="fb-f4_q2"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f4" data-qid="f4_q3">
+            <div class="question-header">
+              <div class="question-title">Preenche os espaços do texto sobre o cristianismo:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              O cristianismo foi fundado a partir da mensagem de <select class="custom-select" id="f4_q3_1"><option value="">-- Escolhe --</option><option value="Jesus Cristo">Jesus Cristo</option><option value="Teodosio">Teodósio</option></select>. 
+              Prega a crença num só Deus, sendo uma religião <select class="custom-select" id="f4_q3_2"><option value="">-- Escolhe --</option><option value="monoteista">monoteísta</option><option value="politeista">politeísta</option></select>, 
+              que assenta em princípios como o amor a <select class="custom-select" id="f4_q3_3"><option value="">-- Escolhe --</option><option value="Deus">Deus</option><option value="Cesar">César</option></select> 
+              e ao próximo, a <select class="custom-select" id="f4_q3_4"><option value="">-- Escolhe --</option><option value="igualdade">igualdade</option><option value="guerra">guerra</option></select> entre todos. 
+              Os seus seguidores foram <select class="custom-select" id="f4_q3_5"><option value="">-- Escolhe --</option><option value="perseguidos">perseguidos</option><option value="premiados">premiados</option></select>. 
+              Em <select class="custom-select" id="f4_q3_6"><option value="">-- Ano --</option><option value="313">313</option><option value="380">380</option></select>, 
+              o Édito de Milão concedeu liberdade religiosa e, em <select class="custom-select" id="f4_q3_7"><option value="">-- Ano --</option><option value="313">313</option><option value="380">380</option></select>, 
+              o imperador <select class="custom-select" id="f4_q3_8"><option value="">-- Escolhe --</option><option value="Teodosio">Teodósio</option><option value="Alexandre">Alexandre</option></select> declarou o cristianismo a religião oficial do Império.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f4', 'f4_q3', ['Jesus Cristo', 'monoteista', 'Deus', 'igualdade', 'perseguidos', '313', '380', 'Teodosio'], 'Correto! Jesus Cristo; monoteísta; Deus; igualdade; perseguidos; 313; 380; Teodósio.')">Validar Texto</button>
+            <div class="feedback-box" id="fb-f4_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f4" data-qid="f4_q4">
+            <div class="question-header">
+              <div class="question-title">Completa as afirmações sobre a contagem do tempo:</div>
+            </div>
+            <div class="match-row"><span>O nascimento de ... marcou o início da era cristã:</span><select class="custom-select" id="f4_q4_a"><option value="">--</option><option value="Jesus Cristo">Jesus Cristo</option><option value="Viriato">Viriato</option></select></div>
+            <div class="match-row"><span>A era cristã é um sistema de contagem do:</span><select class="custom-select" id="f4_q4_b"><option value="">--</option><option value="tempo">tempo</option><option value="ouro">ouro</option></select></div>
+            <div class="match-row"><span>O tempo a. C. é contado de forma:</span><select class="custom-select" id="f4_q4_c"><option value="">--</option><option value="decrescente">decrescente</option><option value="crescente">crescente</option></select></div>
+            <div class="match-row"><span>O tempo d. C. é contado de forma:</span><select class="custom-select" id="f4_q4_d"><option value="">--</option><option value="decrescente">decrescente</option><option value="crescente">crescente</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f4', 'f4_q4', {f4_q4_a: 'Jesus Cristo', f4_q4_b: 'tempo', f4_q4_c: 'decrescente', f4_q4_d: 'crescente'}, 'Correto! Jesus Cristo; tempo; decrescente; crescente.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f4_q4"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f4" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f4">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 5 ================= -->
+    <div id="tab5" class="section-content">
+      <div class="study-card">
+        <h2>Os Muçulmanos na Península Ibérica</h2>
+        <div class="progress-bar-container">
+          <span id="score-f5">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f5"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f5')">🔄 Tentar Novamente</button>
+          <span id="lock-f5">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img8.jpg', 'A conquista muçulmana da Península Ibérica em 711')">
+            <img src="./img8.jpg" alt="Conquista Muçulmana" onerror="this.alt='Conquista Muçulmana'">
+            <div class="image-thumb-caption">Conquista Muçulmana</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img9.jpg', 'Vestígios da arquitetura muçulmana e a Nora de rega')">
+            <img src="./img9.jpg" alt="Vestígios" onerror="this.alt='Vestígios'">
+            <div class="image-thumb-caption">Arquitetura e a Nora</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f5" data-qid="f5_q1">
+            <div class="question-header">
+              <div class="question-title">Completa o quadro com as características do islamismo:</div>
+            </div>
+            <div class="match-row"><span>Origem geográfica:</span><select class="custom-select" id="f5_is_1"><option value="">--</option><option value="Peninsula Arabica">Península Arábica</option><option value="Europa">Europa</option></select></div>
+            <div class="match-row"><span>Nome do seu Deus:</span><select class="custom-select" id="f5_is_2"><option value="">--</option><option value="Ala">Alá</option><option value="Jave">Javé</option></select></div>
+            <div class="match-row"><span>Livro sagrado:</span><select class="custom-select" id="f5_is_3"><option value="">--</option><option value="Corao">Corão ou Alcorão</option><option value="Biblia">Bíblia</option></select></div>
+            <div class="match-row"><span>Designação dos seus crentes:</span><select class="custom-select" id="f5_is_4"><option value="">--</option><option value="muculmanos">muçulmanos</option><option value="cristaos">cristãos</option></select></div>
+            <div class="match-row"><span>Exemplo de princípio fundamental:</span><select class="custom-select" id="f5_is_5"><option value="">--</option><option value="meca">rezar cinco vezes ao dia, virado para Meca</option><option value="mar">pescar aos sábados</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f5', 'f5_q1', {f5_is_1:'Peninsula Arabica', f5_is_2:'Ala', f5_is_3:'Corao', f5_is_4:'muculmanos', f5_is_5:'meca'}, 'Correto! Península Arábica, Alá, Corão ou Alcorão, muçulmanos e orar 5 vezes ao dia virado para Meca.')">Validar</button>
+            <div class="feedback-box" id="fb-f5_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f5" data-qid="f5_q21">
+            <div class="question-header">
+              <div class="question-title">Seleciona duas razões que levaram os muçulmanos a conquistar a Península Ibérica:</div>
+            </div>
+            <label class="checkbox-item"><input type="checkbox" id="f5_q21_0"> Acesso a terras mais ricas e férteis</label>
+            <label class="checkbox-item"><input type="checkbox" id="f5_q21_1"> Procura de territórios com outros árabes</label>
+            <label class="checkbox-item"><input type="checkbox" id="f5_q21_2"> Expansão da fé islâmica</label>
+            <label class="checkbox-item"><input type="checkbox" id="f5_q21_3"> Difusão do cristianismo</label>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('f5', 'f5_q21', [0,2], 'Correto! Acesso a terras mais ricas e férteis e expansão da fé islâmica.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f5_q21"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f5" data-qid="f5_q22">
+            <div class="question-header">
+              <div class="question-title">Assinala as opções que completam corretamente as afirmações sobre a conquista muçulmana:</div>
+            </div>
+            <div class="match-row"><span>O exército muçulmano chegou através do:</span><select class="custom-select" id="f5_q22_1"><option value="">--</option><option value="Norte de Africa">Norte de África</option><option value="Norte da Europa">Norte da Europa</option></select></div>
+            <div class="match-row"><span>Atravessaram o:</span><select class="custom-select" id="f5_q22_2"><option value="">--</option><option value="Estreito de Gibraltar">Estreito de Gibraltar</option><option value="Pireneus">Pirenéus</option></select></div>
+            <div class="match-row"><span>O texto faz referência à Batalha de:</span><select class="custom-select" id="f5_q22_3"><option value="">--</option><option value="Guadalete">Guadalete</option><option value="Sao Mamede">São Mamede</option></select></div>
+            <div class="match-row"><span>Foram comandados por:</span><select class="custom-select" id="f5_q22_4"><option value="">--</option><option value="Tarique">Tárique</option><option value="Afonso I">Afonso I</option></select></div>
+            <div class="match-row"><span>Não conseguiram conquistar a região:</span><select class="custom-select" id="f5_q22_5"><option value="">--</option><option value="Asturias">das Astúrias e dos Pirenéus</option><option value="Al-Andalus">do Al-Andalus</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f5', 'f5_q22', {f5_q22_1:'Norte de Africa', f5_q22_2:'Estreito de Gibraltar', f5_q22_3:'Guadalete', f5_q22_4:'Tarique', f5_q22_5:'Asturias'}, 'Correto! Norte de África; Estreito de Gibraltar; Guadalete; Tárique; das Astúrias e dos Pirenéus.')">Validar</button>
+            <div class="feedback-box" id="fb-f5_q22"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f5" data-qid="f5_q3">
+            <div class="question-header">
+              <div class="question-title">Completa o balão de fala do mouro:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              "A nossa presença na Península Ibérica provocou lutas violentas, mas também estabelecemos formas de <select class="custom-select" id="f5_q3_1"><option value="">-- Escolhe --</option><option value="entendimento">entendimento</option><option value="guerra">guerra</option></select>. 
+              Muitos cristãos <select class="custom-select" id="f5_q3_2"><option value="">-- Escolhe --</option><option value="converteram-se">converteram-se</option><option value="fugiram">fugiram</option></select> ao islamismo; outros, para continuarem a praticar a sua religião, tinham de nos pagar <select class="custom-select" id="f5_q3_3"><option value="">-- Escolhe --</option><option value="impostos">impostos</option><option value="comida">comida</option></select>."
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f5', 'f5_q3', ['entendimento', 'converteram-se', 'impostos'], 'Correto! Entendimento; converteram-se; impostos.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f5_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f5" data-qid="f5_q4">
+            <div class="question-header">
+              <div class="question-title">Responde com base nas figuras dos vestígios muçulmanos e da nora:</div>
+            </div>
+            <div class="match-row"><span>Por que existem mais vestígios no sul?</span><select class="custom-select" id="f5_q4_1"><option value="">--</option><option value="tempo">porque foi onde os muçulmanos permaneceram mais tempo</option><option value="pedra">porque a pedra era mais forte no sul</option></select></div>
+            <div class="match-row"><span>Áreas de conhecimento influenciadas pela nora:</span><select class="custom-select" id="f5_q4_2"><option value="">--</option><option value="irrigacao">Agricultura e irrigação dos campos</option><option value="industria">Fábricas de vapor</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f5', 'f5_q4', {f5_q4_1:'tempo', f5_q4_2:'irrigacao'}, 'Correto! Foi onde permaneceram mais tempo. A nora revolucionou a agricultura e a irrigação dos campos.')">Validar</button>
+            <div class="feedback-box" id="fb-f5_q4"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f5" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f5">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 6 ================= -->
+    <div id="tab6" class="section-content">
+      <div class="study-card">
+        <h2>A Formação do Reino de Portugal</h2>
+        <div class="progress-bar-container">
+          <span id="score-f6">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f6"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f6')">🔄 Tentar Novamente</button>
+          <span id="lock-f6">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <p style="font-size:0.85rem; margin-bottom:0.6rem;">
+          D. Afonso Henriques lutou pelo reconhecimento da <span class="glossary-term" data-def="Documento pontifício solene selado pelo Papa para decretos de grande importância.">bula</span> papal e pela independência total.
+        </p>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img10.jpg', 'Reinos cristãos e condados da Península Ibérica no século XI')">
+            <img src="./img10.jpg" alt="Condado Portucalense" onerror="this.alt='Condado Portucalense'">
+            <div class="image-thumb-caption">Reinos Cristãos no Século XI</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f6" data-qid="f6_q11">
+            <div class="question-header">
+              <div class="question-title">Identifica os reinos cristãos assinalados no mapa:</div>
+            </div>
+            <div class="match-row"><span>Reino A:</span><select class="custom-select" id="f6_q11_a"><option value="">--</option><option value="Leao">Leão</option><option value="Castela">Castela</option><option value="Navarra">Navarra</option><option value="Aragao">Aragão</option></select></div>
+            <div class="match-row"><span>Reino B:</span><select class="custom-select" id="f6_q11_b"><option value="">--</option><option value="Leao">Leão</option><option value="Castela">Castela</option><option value="Navarra">Navarra</option><option value="Aragao">Aragão</option></select></div>
+            <div class="match-row"><span>Reino C:</span><select class="custom-select" id="f6_q11_c"><option value="">--</option><option value="Leao">Leão</option><option value="Castela">Castela</option><option value="Navarra">Navarra</option><option value="Aragao">Aragão</option></select></div>
+            <div class="match-row"><span>Reino D:</span><select class="custom-select" id="f6_q11_d"><option value="">--</option><option value="Leao">Leão</option><option value="Castela">Castela</option><option value="Navarra">Navarra</option><option value="Aragao">Aragão</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f6', 'f6_q11', {f6_q11_a:'Leao', f6_q11_b:'Castela', f6_q11_c:'Navarra', f6_q11_d:'Aragao'}, 'Correto! A: Leão. B: Castela. C: Navarra. D: Aragão.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f6_q11"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f6" data-qid="f6_q12">
+            <div class="question-header">
+              <div class="question-title">Sobre a doação de Afonso VI de Leão e Castela a D. Henrique:</div>
+            </div>
+            <div class="match-row"><span>Qual condado foi doado a D. Henrique?</span><select class="custom-select" id="f6_q12_cond"><option value="">--</option><option value="Condado Portucalense">Condado Portucalense</option><option value="Condado da Galiza">Condado da Galiza</option></select></div>
+            <div class="match-row"><span>Por que razão se deu essa doação?</span><select class="custom-select" id="f6_q13_mot"><option value="">--</option><option value="servicos">Devido aos serviços prestados na luta contra os muçulmanos no território</option><option value="ouro">Porque comprou as terras com ouro</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f6', 'f6_q12', {f6_q12_cond:'Condado Portucalense', f6_q13_mot:'servicos'}, 'Correto! Foi o Condado Portucalense, devido aos serviços prestados por D. Henrique na luta contra os muçulmanos.')">Validar</button>
+            <div class="feedback-box" id="fb-f6_q12"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f6" data-qid="f6_q2">
+            <div class="question-header">
+              <div class="question-title">Completa o texto sobre a governação após a morte do conde D. Henrique:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              Após a morte do conde D. Henrique, <select class="custom-select" id="f6_q2_1"><option value="">-- Escolhe --</option><option value="D. Teresa">D. Teresa</option><option value="D. Mafalda">D. Mafalda</option></select> assumiu a governação. 
+              No entanto, a sua proximidade com a nobreza da <select class="custom-select" id="f6_q2_2"><option value="">-- Escolhe --</option><option value="Galiza">Galiza</option><option value="Franca">França</option></select> colocava em causa a <select class="custom-select" id="f6_q2_3"><option value="">-- Escolhe --</option><option value="independencia">independência</option><option value="paz">paz</option></select> do território. 
+              Os nobres organizaram um movimento de oposição, liderado por <select class="custom-select" id="f6_q2_4"><option value="">-- Escolhe --</option><option value="D. Afonso Henriques">D. Afonso Henriques</option><option value="D. Dinis">D. Dinis</option></select>. 
+              Este acabaria por derrotar o exército da sua mãe na Batalha de <select class="custom-select" id="f6_q2_5"><option value="">-- Escolhe --</option><option value="Sao Mamede">São Mamede</option><option value="Ourique">Ourique</option></select>.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f6', 'f6_q2', ['D. Teresa', 'Galiza', 'independencia', 'D. Afonso Henriques', 'Sao Mamede'], 'Correto! D. Teresa; Galiza; independência; D. Afonso Henriques; São Mamede.')">Validar</button>
+            <div class="feedback-box" id="fb-f6_q2"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f6" data-qid="f6_q3">
+            <div class="question-header">
+              <div class="question-title">Completa o balão de fala de D. Afonso Henriques com os seus objetivos:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              "Quero alargar o território do meu Condado! Para <select class="custom-select" id="f6_q3_1"><option value="">-- Escolhe --</option><option value="sul">sul</option><option value="norte">norte</option></select> é o caminho e tenho de continuar a lutar contra os <select class="custom-select" id="f6_q3_2"><option value="">-- Escolhe --</option><option value="mouros">mouros</option><option value="franceses">franceses</option></select>. 
+              Quero, ainda, alcançar a independência em relação ao reino de <select class="custom-select" id="f6_q3_3"><option value="">-- Escolhe --</option><option value="Leao e Castela">Leão e Castela</option><option value="Franca">França</option></select> e obter o reconhecimento máximo da <select class="custom-select" id="f6_q3_4"><option value="">-- Escolhe --</option><option value="Igreja">Igreja</option><option value="Nobreza">Nobreza</option></select>. 
+              O meu objetivo é que o Papa me reconheça como <select class="custom-select" id="f6_q3_5"><option value="">-- Escolhe --</option><option value="rei">rei</option><option value="conde">conde</option></select> e Portugal como um reino <select class="custom-select" id="f6_q3_6"><option value="">-- Escolhe --</option><option value="independente">independente</option><option value="pequeno">pequeno</option></select>."
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f6', 'f6_q3', ['sul', 'mouros', 'Leao e Castela', 'Igreja', 'rei', 'independente'], 'Correto! Sul; mouros; Leão e Castela; Igreja; rei; independente.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f6_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f6" data-qid="f6_q4">
+            <div class="question-header">
+              <div class="question-title">Ordena os acontecimentos do mais antigo ao mais recente:</div>
+            </div>
+            <div class="order-list" id="order_list_f6">
+              <div class="order-item" data-val="mamede">Batalha de São Mamede <div class="order-controls"><button onclick="moveItem('order_list_f6', -1, this)">▲</button><button onclick="moveItem('order_list_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="ourique">Batalha de Ourique <div class="order-controls"><button onclick="moveItem('order_list_f6', -1, this)">▲</button><button onclick="moveItem('order_list_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="zamora">Tratado de Zamora <div class="order-controls"><button onclick="moveItem('order_list_f6', -1, this)">▲</button><button onclick="moveItem('order_list_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="conquistas">Conquista de Santarém, Lisboa e Almada <div class="order-controls"><button onclick="moveItem('order_list_f6', -1, this)">▲</button><button onclick="moveItem('order_list_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="bula">Bula Manifestis Probatum <div class="order-controls"><button onclick="moveItem('order_list_f6', -1, this)">▲</button><button onclick="moveItem('order_list_f6', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="algarve">Conquista definitiva do Algarve <div class="order-controls"><button onclick="moveItem('order_list_f6', -1, this)">▲</button><button onclick="moveItem('order_list_f6', 1, this)">▼</button></div></div>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkOrder('f6', 'f6_q4', 'order_list_f6', ['mamede', 'ourique', 'zamora', 'conquistas', 'bula', 'algarve'], 'Correto! Sequência: S. Mamede -> Ourique -> Zamora -> Santarém/Lisboa -> Bula Papal -> Conquista do Algarve.')">Validar Ordem</button>
+            <div class="feedback-box" id="fb-f6_q4"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f6" data-qid="f6_q5">
+            <div class="question-header">
+              <div class="question-title">Assinala as opções corretas:</div>
+            </div>
+            <div class="match-row"><span>Papa que reconheceu D. Afonso Henriques:</span><select class="custom-select" id="f6_q5_1"><option value="">--</option><option value="Alexandre I">Alexandre I</option><option value="Alexandre III">Alexandre III</option><option value="Bento III">Bento III</option></select></div>
+            <div class="match-row"><span>A monarquia é uma forma de governo cuja sucessão é:</span><select class="custom-select" id="f6_q5_2"><option value="">--</option><option value="hereditaria">hereditária</option><option value="eleita">eleita</option></select></div>
+            <div class="match-row"><span>Quem conquistou definitivamente o Algarve foi:</span><select class="custom-select" id="f6_q5_3"><option value="">--</option><option value="D. Dinis">D. Dinis</option><option value="D. Afonso III">D. Afonso III</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f6', 'f6_q5', {f6_q5_1:'Alexandre III', f6_q5_2:'hereditaria', f6_q5_3:'D. Afonso III'}, 'Correto! Alexandre III; sucessão hereditária; D. Afonso III.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f6_q5"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f6" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f6">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 7 ================= -->
+    <div id="tab7" class="section-content">
+      <div class="study-card">
+        <h2>Portugal no Século XIII</h2>
+        <div class="progress-bar-container">
+          <span id="score-f7">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f7"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f7')">🔄 Tentar Novamente</button>
+          <span id="lock-f7">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img11.jpg', 'Reconstituição de um mosteiro do século XIII')">
+            <img src="./img11.jpg" alt="Mosteiro" onerror="this.alt='Mosteiro'">
+            <div class="image-thumb-caption">Mosteiro Medieval</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img12.jpg', 'Igreja de Cedofeita (Românico) e Mosteiro de Alcobaça (Gótico)')">
+            <img src="./img12.jpg" alt="Arquitetura Séc XIII" onerror="this.alt='Arquitetura'">
+            <div class="image-thumb-caption">Estilos Românico e Gótico</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f7" data-qid="f7_q1">
+            <div class="question-header">
+              <div class="question-title">Associa as características aos grupos sociais do século XIII (Povo, Clero, Nobreza):</div>
+            </div>
+            <div class="match-row"><span>Uma das suas funções era rezar pela população:</span><select class="custom-select" id="f7_q1_1"><option value="">--</option><option value="Clero">Clero</option><option value="Nobreza">Nobreza</option><option value="Povo">Povo</option></select></div>
+            <div class="match-row"><span>Os seus membros trabalhavam nas atividades produtivas:</span><select class="custom-select" id="f7_q1_2"><option value="">--</option><option value="Povo">Povo</option><option value="Clero">Clero</option></select></div>
+            <div class="match-row"><span>Defendia e administrava o reino:</span><select class="custom-select" id="f7_q1_3"><option value="">--</option><option value="Nobreza">Nobreza</option><option value="Povo">Povo</option></select></div>
+            <div class="match-row"><span>Não tinha qualquer privilégio e pagava impostos e rendas:</span><select class="custom-select" id="f7_q1_4"><option value="">--</option><option value="Povo">Povo</option><option value="Clero">Clero</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f7', 'f7_q1', {f7_q1_1:'Clero', f7_q1_2:'Povo', f7_q1_3:'Nobreza', f7_q1_4:'Povo'}, 'Correto! Povo: trabalho produtivo e pagamento de impostos. Clero: rezar. Nobreza: combater e administrar.')">Validar</button>
+            <div class="feedback-box" id="fb-f7_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f7" data-qid="f7_q2">
+            <div class="question-header">
+              <div class="question-title">Observa a imagem do mosteiro e completa o texto e partes do Mosteiro:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              "Nos mosteiros, os monges dedicavam-se, entre outras atividades, ao <select class="custom-select" id="f7_q2_1"><option value="">-- Escolhe --</option><option value="ensino">ensino</option><option value="comercio">comércio</option></select> e à <select class="custom-select" id="f7_q2_2"><option value="">-- Escolhe --</option><option value="assistencia">assistência a doentes e peregrinos</option><option value="guerra">guerra</option></select>. Por isso, eram considerados pontos de apoio à <select class="custom-select" id="f7_q2_3"><option value="">-- Escolhe --</option><option value="populacao">população</option><option value="corte">corte</option></select>."
+            </p>
+            <div class="match-row"><span>Local onde os monges dormiam:</span><select class="custom-select" id="f7_m_1"><option value="">--</option><option value="Dormitorio">Dormitório</option><option value="Refeitorio">Refeitório</option></select></div>
+            <div class="match-row"><span>Centro do mosteiro com jardim:</span><select class="custom-select" id="f7_m_3"><option value="">--</option><option value="Claustro">Claustro</option><option value="Igreja">Igreja</option></select></div>
+            <div class="match-row"><span>Local onde copiavam livros:</span><select class="custom-select" id="f7_m_6"><option value="">--</option><option value="Scriptorium">Scriptorium</option><option value="Enfermaria">Enfermaria</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f7', 'f7_q2', {f7_q2_1:'ensino', f7_q2_2:'assistencia', f7_q2_3:'populacao', f7_m_1:'Dormitorio', f7_m_3:'Claustro', f7_m_6:'Scriptorium'}, 'Correto! Ensino; assistência a doentes e peregrinos; população. Dormitório, Claustro, Scriptorium.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f7_q2"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f7" data-qid="f7_q3">
+            <div class="question-header">
+              <div class="question-title">Preenche com a informação do Foral de Coimbra de 1179:</div>
+            </div>
+            <div class="match-row"><span>Rei que atribuiu a carta de foral:</span><select class="custom-select" id="f7_f_rei"><option value="">--</option><option value="D. Afonso I">D. Afonso I</option><option value="D. Dinis">D. Dinis</option></select></div>
+            <div class="match-row"><span>Cidade a que se destina a carta:</span><select class="custom-select" id="f7_f_cid"><option value="">--</option><option value="Coimbra">Coimbra</option><option value="Lisboa">Lisboa</option></select></div>
+            <div class="match-row"><span>Século em que a carta foi escrita:</span><select class="custom-select" id="f7_f_sec"><option value="">--</option><option value="seculo XII">século XII</option><option value="seculo XIII">século XIII</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f7', 'f7_q3', {f7_f_rei:'D. Afonso I', f7_f_cid:'Coimbra', f7_f_sec:'seculo XII'}, 'Correto! Rei: D. Afonso I; Cidade: Coimbra; Século: século XII.')">Confirmar Foral</button>
+            <div class="feedback-box" id="fb-f7_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f7" data-qid="f7_q4">
+            <div class="question-header">
+              <div class="question-title">Classifica as seguintes afirmações sobre as atividades económicas do século XIII como verdadeiras ou falsas:</div>
+            </div>
+            <div class="match-row"><span>A principal atividade era a agricultura, mas a sua produção era reduzida:</span><select class="custom-select" id="f7_vf_a"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>A extensão da costa portuguesa favoreceu o desenvolvimento da pesca:</span><select class="custom-select" id="f7_vf_b"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>A produção artesanal desenvolveu-se, sobretudo, nas cidades:</span><select class="custom-select" id="f7_vf_c"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>O comércio interno desenvolvia-se, essencialmente, por via marítima:</span><select class="custom-select" id="f7_vf_d"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>O comércio externo era realizado com outros países:</span><select class="custom-select" id="f7_vf_e"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f7', 'f7_q4', {f7_vf_a:'V', f7_vf_b:'V', f7_vf_c:'V', f7_vf_d:'F', f7_vf_e:'V'}, 'Correto! Apenas a afirmação sobre o comércio interno marítimo é falsa.')">Validar</button>
+            <div class="feedback-box" id="fb-f7_q4"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f7" data-qid="f7_q5">
+            <div class="question-header">
+              <div class="question-title">Fronteiras e estilos arquitetónicos do século XIII:</div>
+            </div>
+            <div class="match-row"><span>O alargamento do território para sul continuou até ao reinado de:</span><select class="custom-select" id="f7_fr_1"><option value="">--</option><option value="D. Afonso III">D. Afonso III</option><option value="D. Sancho I">D. Sancho I</option></select></div>
+            <div class="match-row"><span>Com o Tratado de Alcanizes, foram fixados os limites a:</span><select class="custom-select" id="f7_fr_2"><option value="">--</option><option value="este">este</option><option value="oeste">oeste</option></select></div>
+            <div class="match-row"><span>Identifica os estilos de São Martinho de Cedofeita e Mosteiro de Alcobaça:</span><select class="custom-select" id="f7_fr_3"><option value="">--</option><option value="correto">Cedofeita é Românico e Alcobaça é Gótico</option><option value="errado">Cedofeita é Gótico e Alcobaça é Românico</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f7', 'f7_q5', {f7_fr_1:'D. Afonso III', f7_fr_2:'este', f7_fr_3:'correto'}, 'Correto! D. Afonso III; limites a este; Cedofeita é românico e Alcobaça é gótico.')">Validar</button>
+            <div class="feedback-box" id="fb-f7_q5"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f7" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f7">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 8 ================= -->
+    <div id="tab8" class="section-content">
+      <div class="study-card">
+        <h2>1383-1385 – Um Tempo de Revolução</h2>
+        <div class="progress-bar-container">
+          <span id="score-f8">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f8"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f8')">🔄 Tentar Novamente</button>
+          <span id="lock-f8">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <p style="font-size:0.85rem; margin-bottom:0.6rem;">
+          Após a morte de D. Fernando, D. Leonor Teles assumiu o cargo de <span class="glossary-term" data-def="Pessoa que governa um reino provisoriamente durante a menoridade, ausência ou incapacidade do rei.">regente</span>.
+        </p>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f8" data-qid="f8_q1">
+            <div class="question-header">
+              <div class="question-title">Completa o friso com os problemas que originaram a crise no século XIV:</div>
+            </div>
+            <div class="match-row"><span>Ano 1348:</span><select class="custom-select" id="f8_fr_1"><option value="">--</option><option value="Peste">Peste Negra chega a Portugal</option><option value="Guerras">Início das Guerras Fernandinas</option><option value="Morte">Morte de D. Fernando</option></select></div>
+            <div class="match-row"><span>Ano 1369:</span><select class="custom-select" id="f8_fr_2"><option value="">--</option><option value="Peste">Peste Negra chega a Portugal</option><option value="Guerras">Início das Guerras Fernandinas</option><option value="Morte">Morte de D. Fernando</option></select></div>
+            <div class="match-row"><span>Ano 1383:</span><select class="custom-select" id="f8_fr_3"><option value="">--</option><option value="Peste">Peste Negra chega a Portugal</option><option value="Guerras">Início das Guerras Fernandinas</option><option value="Morte">Morte de D. Fernando</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f8', 'f8_q1', {f8_fr_1:'Peste', f8_fr_2:'Guerras', f8_fr_3:'Morte'}, 'Correto! 1348: Peste Negra chega a Portugal. 1369: Início das Guerras Fernandinas. 1383: Morte de D. Fernando.')">Validar Friso</button>
+            <div class="feedback-box" id="fb-f8_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f8" data-qid="f8_q2">
+            <div class="question-header">
+              <div class="question-title">Completa o balão de fala do rei D. Fernando sobre as condições do Tratado de Salvaterra de Magos:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              "Assinei o Tratado de Salvaterra de Magos em <select class="custom-select" id="f8_q2_1"><option value="">-- Ano --</option><option value="1383">1383</option><option value="1348">1348</option></select>, para definir as condições de sucessão do meu reino. 
+              Após a minha morte, a minha esposa, <select class="custom-select" id="f8_q2_2"><option value="">-- Escolhe --</option><option value="D. Leonor Teles">D. Leonor Teles</option><option value="D. Beatriz">D. Beatriz</option></select>, ficará como regente. 
+              O primogénito da minha filha, <select class="custom-select" id="f8_q2_3"><option value="">-- Escolhe --</option><option value="D. Beatriz">D. Beatriz</option><option value="D. Ines">D. Inês</option></select>, e do seu marido, <select class="custom-select" id="f8_q2_4"><option value="">-- Escolhe --</option><option value="João I de Castela">João I de Castela</option><option value="conde Andeiro">conde Andeiro</option></select>, será rei de Portugal assim que completar <select class="custom-select" id="f8_q2_5"><option value="">-- Idade --</option><option value="14">14</option><option value="18">18</option></select> anos."
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f8', 'f8_q2', ['1383', 'D. Leonor Teles', 'D. Beatriz', 'João I de Castela', '14'], 'Correto! 1383; D. Leonor Teles; D. Beatriz; João I de Castela; 14 anos.')">Validar Tratado</button>
+            <div class="feedback-box" id="fb-f8_q2"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f8" data-qid="f8_q3">
+            <div class="question-header">
+              <div class="question-title">Assinala as opções corretas sobre a crise:</div>
+            </div>
+            <div class="match-row"><span>O Tratado de Salvaterra de Magos:</span><select class="custom-select" id="f8_q3_1"><option value="">--</option><option value="indep">punha em risco a independência nacional</option><option value="dividia">dividia o mundo em duas partes</option></select></div>
+            <div class="match-row"><span>Após a morte de D. Fernando, iniciou-se uma crise:</span><select class="custom-select" id="f8_q3_2"><option value="">--</option><option value="dinastica">dinástica</option><option value="agricola">agrícola</option></select></div>
+            <div class="match-row"><span>Com a morte de D. Fernando, D. Leonor Teles tornou-se:</span><select class="custom-select" id="f8_q3_3"><option value="">--</option><option value="regente">regente do reino</option><option value="rainha">rainha</option></select></div>
+            <div class="match-row"><span>O conselheiro galego de D. Leonor Teles era o:</span><select class="custom-select" id="f8_q3_4"><option value="">--</option><option value="conde Andeiro">conde Andeiro</option><option value="mestre de Avis">mestre de Avis</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f8', 'f8_q3', {f8_q3_1:'indep', f8_q3_2:'dinastica', f8_q3_3:'regente', f8_q3_4:'conde Andeiro'}, 'Correto! Punha em risco a independência; crise dinástica; regente do reino; conde Andeiro.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f8_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f8" data-qid="f8_q4">
+            <div class="question-header">
+              <div class="question-title">Associa os grupos sociais que apoiaram os principais candidatos ao trono:</div>
+            </div>
+            <div class="match-row"><span>Os grupos sociais que apoiavam D. Beatriz eram:</span><select class="custom-select" id="f8_ap_1"><option value="">--</option><option value="correto">o alto clero e a alta nobreza</option><option value="errado">povo e burguesia</option></select></div>
+            <div class="match-row"><span>Os grupos sociais que apoiavam D. João, mestre de Avis, eram:</span><select class="custom-select" id="f8_ap_2"><option value="">--</option><option value="correto">a baixa nobreza, a burguesia e o povo</option><option value="errado">o rei de Castela</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f8', 'f8_q4', {f8_ap_1:'correto', f8_ap_2:'correto'}, 'Correto! D. Beatriz: o alto clero e a alta nobreza. D. João, mestre de Avis: a baixa nobreza, a burguesia e o povo.')">Validar Apoios</button>
+            <div class="feedback-box" id="fb-f8_q4"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f8" data-qid="f8_q5">
+            <div class="question-header">
+              <div class="question-title">Acontecimentos da crise de 1383-1385 e o início da nova dinastia:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              A 6 de dezembro de 1383, D. João, mestre de Avis matou o conde <select class="custom-select" id="f8_q5_1"><option value="">--</option><option value="Andeiro">Andeiro</option><option value="Braganca">de Bragança</option></select> e o <select class="custom-select" id="f8_q5_2"><option value="">--</option><option value="povo">povo</option><option value="clero">clero</option></select> de Lisboa aclamou-o Regedor e Defensor do Reino.<br>
+              Com D. João I iniciou-se a dinastia de <select class="custom-select" id="f8_q5_3"><option value="">-- Dinastia --</option><option value="Avis">Avis</option><option value="Borgonha">Borgonha</option></select>.<br>
+              Dinastia é uma <select class="custom-select" id="f8_q5_4"><option value="">-- Definição --</option><option value="familia">sucessão de reis que pertencem à mesma família</option><option value="eleicao">eleição anual de ministros</option></select>.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f8', 'f8_q5', ['Andeiro', 'povo', 'Avis', 'familia'], 'Correto! Matou o conde Andeiro; aclamado pelo povo; dinastia de Avis; sucessão de reis da mesma família.')">Validar</button>
+            <div class="feedback-box" id="fb-f8_q5"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f8" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f8">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 9 ================= -->
+    <div id="tab9" class="section-content">
+      <div class="study-card">
+        <h2>Portugal nos Séculos XV e XVI</h2>
+        <div class="progress-bar-container">
+          <span id="score-f9">Aproveitamento: 0% (Necessário ≥ 70%)</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f9"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f9')">🔄 Tentar Novamente</button>
+          <span id="lock-f9">🔒 Ficha seguinte bloqueada</span>
+        </div>
+
+        <div class="image-gallery">
+          <div class="image-thumb-card" onclick="openImageModal('./img13.jpg', 'Instrumentos de navegação astronómica e embarcações da Expansão')">
+            <img src="./img13.jpg" alt="Instrumentos" onerror="this.alt='Instrumentos'">
+            <div class="image-thumb-caption">Instrumentos e Embarcações</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img14.jpg', 'A Conquista de Ceuta em 1415 (painel de azulejos)')">
+            <img src="./img14.jpg" alt="Ceuta" onerror="this.alt='Ceuta'">
+            <div class="image-thumb-caption">Conquista de Ceuta</div>
+          </div>
+          <div class="image-thumb-card" onclick="openImageModal('./img15.jpg', 'A chegada à Índia por Vasco da Gama e Desembarque no Brasil')">
+            <img src="./img15.jpg" alt="Índia e Brasil" onerror="this.alt='Índia e Brasil'">
+            <div class="image-thumb-caption">Índia e Brasil</div>
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f9" data-qid="f9_q1">
+            <div class="question-header">
+              <div class="question-title">Legenda as imagens de instrumentos e embarcações da Expansão:</div>
+            </div>
+            <div class="match-row"><span>Primeira Imagem:</span><select class="custom-select" id="f9_lg_1"><option value="">--</option><option value="Astrolabio">Astrolábio</option><option value="Balestilha">Balestilha</option><option value="Quadrante">Quadrante</option><option value="Caravela">Caravela</option></select></div>
+            <div class="match-row"><span>Segunda Imagem:</span><select class="custom-select" id="f9_lg_2"><option value="">--</option><option value="Astrolabio">Astrolábio</option><option value="Balestilha">Balestilha</option><option value="Quadrante">Quadrante</option><option value="Caravela">Caravela</option></select></div>
+            <div class="match-row"><span>Terceira Imagem:</span><select class="custom-select" id="f9_lg_3"><option value="">--</option><option value="Astrolabio">Astrolábio</option><option value="Balestilha">Balestilha</option><option value="Quadrante">Quadrante</option><option value="Caravela">Caravela</option></select></div>
+            <div class="match-row"><span>Quarta Imagem:</span><select class="custom-select" id="f9_lg_4"><option value="">--</option><option value="Astrolabio">Astrolábio</option><option value="Balestilha">Balestilha</option><option value="Quadrante">Quadrante</option><option value="Caravela">Caravela</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f9', 'f9_q1', {f9_lg_1:'Astrolabio', f9_lg_2:'Balestilha', f9_lg_3:'Quadrante', f9_lg_4:'Caravela'}, 'Correto! Astrolábio, Balestilha, Quadrante e Caravela.')">Validar Legenda</button>
+            <div class="feedback-box" id="fb-f9_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f9" data-qid="f9_q2">
+            <div class="question-header">
+              <div class="question-title">Associa os grupos sociais às respetivas motivações:</div>
+            </div>
+            <div class="match-row"><span>Burguesia:</span><select class="custom-select" id="f9_mot_1"><option value="">--</option><option value="mercados">Aceder a novos mercados e produtos.</option><option value="vida">Melhorar as suas condições de vida.</option><option value="fe">Difundir a fé cristã.</option><option value="terras">Obter novos cargos e mais terras.</option></select></div>
+            <div class="match-row"><span>Povo:</span><select class="custom-select" id="f9_mot_2"><option value="">--</option><option value="mercados">Aceder a novos mercados e produtos.</option><option value="vida">Melhorar as suas condições de vida.</option><option value="fe">Difundir a fé cristã.</option><option value="terras">Obter novos cargos e mais terras.</option></select></div>
+            <div class="match-row"><span>Clero:</span><select class="custom-select" id="f9_mot_3"><option value="">--</option><option value="mercados">Aceder a novos mercados e produtos.</option><option value="vida">Melhorar as suas condições de vida.</option><option value="fe">Difundir a fé cristã.</option><option value="terras">Obter novos cargos e mais terras.</option></select></div>
+            <div class="match-row"><span>Nobreza:</span><select class="custom-select" id="f9_mot_4"><option value="">--</option><option value="mercados">Aceder a novos mercados e produtos.</option><option value="vida">Melhorar as suas condições de vida.</option><option value="fe">Difundir a fé cristã.</option><option value="terras">Obter novos cargos e mais terras.</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f9', 'f9_q2', {f9_mot_1:'mercados', f9_mot_2:'vida', f9_mot_3:'fe', f9_mot_4:'terras'}, 'Correto! Burguesia: Aceder a novos mercados. Povo: Melhorar condições de vida. Clero: Difundir a fé cristã. Nobreza: Obter novos cargos e terras.')">Validar</button>
+            <div class="feedback-box" id="fb-f9_q2"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f9" data-qid="f9_q31">
+            <div class="question-header">
+              <div class="question-title">Classifica as afirmações sobre a conquista de Ceuta como verdadeiras ou falsas:</div>
+            </div>
+            <div class="match-row"><span>A conquista de Ceuta aconteceu em 1500:</span><select class="custom-select" id="f9_ceu_a"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>Ceuta situa-se no Norte de África:</span><select class="custom-select" id="f9_ceu_b"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>Era uma cidade importante, devido à sua localização estratégica:</span><select class="custom-select" id="f9_ceu_c"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>A conquista de Ceuta foi um êxito económico:</span><select class="custom-select" id="f9_ceu_d"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>Os muçulmanos desviaram as rotas comerciais que passavam por Ceuta:</span><select class="custom-select" id="f9_ceu_e"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f9', 'f9_q31', {f9_ceu_a:'F', f9_ceu_b:'V', f9_ceu_c:'V', f9_ceu_d:'F', f9_ceu_e:'V'}, 'Correto! Apenas a primeira (1415) e a quarta afirmação (foi fracasso económico) são falsas.')">Validar V/F</button>
+            <div class="feedback-box" id="fb-f9_q31"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f9" data-qid="f9_q6">
+            <div class="question-header">
+              <div class="question-title">Completa o texto sobre o Tratado de Tordesilhas:</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              O Tratado de Tordesilhas foi celebrado em <select class="custom-select" id="f9_t_1"><option value="">-- Ano --</option><option value="1494">1494</option><option value="1500">1500</option></select>, 
+              entre os reis de Portugal e de <select class="custom-select" id="f9_t_2"><option value="">-- País --</option><option value="Espanha">Espanha</option><option value="Franca">França</option></select>, 
+              após a mediação do Papa <select class="custom-select" id="f9_t_3"><option value="">-- Papa --</option><option value="Alexandre VI">Alexandre VI</option><option value="Alexandre III">Alexandre III</option></select>. 
+              Dividia o mundo em <select class="custom-select" id="f9_t_4"><option value="">-- Partes --</option><option value="duas">duas</option><option value="tres">três</option></select> partes, 
+              a partir de um meridiano a <select class="custom-select" id="f9_t_5"><option value="">-- Léguas --</option><option value="370">370</option><option value="100">100</option></select> léguas a ocidente de Cabo <select class="custom-select" id="f9_t_6"><option value="">-- Cabo --</option><option value="Verde">Verde</option><option value="Bojador">Bojador</option></select>. 
+              As terras a <select class="custom-select" id="f9_t_7"><option value="">-- Sentido --</option><option value="oriente">oriente</option><option value="ocidente">ocidente</option></select> seriam de <select class="custom-select" id="f9_t_8"><option value="">-- País --</option><option value="Portugal">Portugal</option><option value="Espanha">Espanha</option></select> 
+              e para ocidente seriam de <select class="custom-select" id="f9_t_9"><option value="">-- País --</option><option value="Espanha">Espanha</option><option value="Franca">França</option></select>.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f9', 'f9_q6', ['1494', 'Espanha', 'Alexandre VI', 'duas', '370', 'Verde', 'oriente', 'Portugal', 'Espanha'], 'Correto! 1494; Espanha; Alexandre VI; duas; 370; Verde; oriente; Portugal; Espanha.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f9_q6"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f9" data-qid="f9_q7">
+            <div class="question-header">
+              <div class="question-title">Ordena os acontecimentos do mais antigo ao mais recente:</div>
+            </div>
+            <div class="order-list" id="order_list_f9">
+              <div class="order-item" data-val="tormentas">Bartolomeu Dias dobra o cabo das Tormentas. <div class="order-controls"><button onclick="moveItem('order_list_f9', -1, this)">▲</button><button onclick="moveItem('order_list_f9', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="india">Vasco da Gama chega à Índia por mar. <div class="order-controls"><button onclick="moveItem('order_list_f9', -1, this)">▲</button><button onclick="moveItem('order_list_f9', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="brasil">Pedro Álvares Cabral chega ao Brasil. <div class="order-controls"><button onclick="moveItem('order_list_f9', -1, this)">▲</button><button onclick="moveItem('order_list_f9', 1, this)">▼</button></div></div>
+              <div class="order-item" data-val="magalhaes">Fernão de Magalhães realiza a primeira viagem de circum-navegação. <div class="order-controls"><button onclick="moveItem('order_list_f9', -1, this)">▲</button><button onclick="moveItem('order_list_f9', 1, this)">▼</button></div></div>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkOrder('f9', 'f9_q7', 'order_list_f9', ['tormentas', 'india', 'brasil', 'magalhaes'], 'Correto! a) 1 (Tormentas); b) 2 (Índia); d) 3 (Brasil); c) 4 (Circum-navegação).')">Validar Ordem</button>
+            <div class="feedback-box" id="fb-f9_q7"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f9" data-qid="f9_q10">
+            <div class="question-header">
+              <div class="question-title">Assinala a imagem que representa um exemplo do Manuelino:</div>
+            </div>
+            <div class="options-group" data-shuffle="true">
+              <button class="option-btn" data-correct="true" onclick="checkAnswer('f9', 'f9_q10', this, 'Correto! Imagem A (Torre de Belém).')">Torre de Belém</button>
+              <button class="option-btn" onclick="checkAnswer('f9', 'f9_q10', this, 'Incorreto. A Imagem B representa o Templo Romano de Évora.')">Templo Romano de Évora</button>
+              <button class="option-btn" onclick="checkAnswer('f9', 'f9_q10', this, 'Incorreto. A Imagem C representa o Castelo Medieval de Guimarães.')">Castelo de Guimarães</button>
+            </div>
+            <div class="feedback-box" id="fb-f9_q10"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f9" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f9">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FICHA 10 ================= -->
+    <div id="tab10" class="section-content">
+      <div class="study-card">
+        <h2>Da União Ibérica à Restauração</h2>
+        <div class="progress-bar-container">
+          <span id="score-f10">Aproveitamento: 0%</span>
+          <div class="progress-track"><div class="progress-fill" id="pfill-f10"></div></div>
+          <button class="btn btn-danger-light" onclick="retrySheet('f10')">🔄 Tentar Novamente</button>
+          <span id="lock-f10">Curso Concluído!</span>
+        </div>
+
+        <div class="quiz-box">
+          <div class="question-block" data-sheet="f10" data-qid="f10_q1">
+            <div class="question-header">
+              <div class="question-title">Lê o texto sobre a Batalha de 4 de agosto de 1578:</div>
+            </div>
+            <div class="match-row"><span>A que batalha se refere o texto?</span><select class="custom-select" id="f10_q1_bat"><option value="">--</option><option value="Alcacer Quibir">Batalha de Alcácer Quibir</option><option value="Aljubarrota">Batalha de Aljubarrota</option></select></div>
+            <div class="match-row"><span>A crise dinástica deu-se porque o monarca:</span><select class="custom-select" id="f10_q2_1"><option value="">--</option><option value="nao tinha">não tinha descendentes</option><option value="tinha muitos">tinha muitos descendentes</option></select></div>
+            <div class="match-row"><span>Quem sucedeu no trono de Portugal foi:</span><select class="custom-select" id="f10_q2_2"><option value="">--</option><option value="cardeal">o cardeal D. Henrique</option><option value="beatriz">D. Beatriz de Bragança</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f10', 'f10_q1', {f10_q1_bat:'Alcacer Quibir', f10_q2_1:'nao tinha', f10_q2_2:'cardeal'}, 'Correto! 1. Batalha de Alcácer Quibir. 2.1. a) não tinha descendentes. 2.2. b) o cardeal D. Henrique.')">Validar</button>
+            <div class="feedback-box" id="fb-f10_q1"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f10" data-qid="f10_q3">
+            <div class="question-header">
+              <div class="question-title">Associa os candidatos ao trono em 1580 aos seus respetivos apoios:</div>
+            </div>
+            <div class="match-row"><span>D. Catarina de Bragança:</span><select class="custom-select" id="f10_cand_1"><option value="">--</option><option value="clero_nobreza">elementos do clero e da nobreza</option><option value="populares">grupos populares</option><option value="maior_parte">maior parte do clero, da nobreza e da burguesia</option></select></div>
+            <div class="match-row"><span>D. António, prior do Crato:</span><select class="custom-select" id="f10_cand_2"><option value="">--</option><option value="clero_nobreza">elementos do clero e da nobreza</option><option value="populares">grupos populares</option><option value="maior_parte">maior parte do clero, da nobreza e da burguesia</option></select></div>
+            <div class="match-row"><span>Filipe II de Espanha:</span><select class="custom-select" id="f10_cand_3"><option value="">--</option><option value="clero_nobreza">elementos do clero e da nobreza</option><option value="populares">grupos populares</option><option value="maior_parte">maior parte do clero, da nobreza e da burguesia</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f10', 'f10_q3', {f10_cand_1:'clero_nobreza', f10_cand_2:'populares', f10_cand_3:'maior_parte'}, 'Correto! D. Catarina de Bragança – elementos do clero e da nobreza; D. António, prior do Crato – grupos populares; Filipe II de Espanha – maior parte do clero, da nobreza e da burguesia.')">Confirmar</button>
+            <div class="feedback-box" id="fb-f10_q3"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f10" data-qid="f10_q4">
+            <div class="question-header">
+              <div class="question-title">Assinala com V ou F as afirmações:</div>
+            </div>
+            <div class="match-row"><span>a) D. António, prior do Crato, foi aclamado rei pelo povo, em Santarém:</span><select class="custom-select" id="f10_vf_a"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>b) Em 1580, as tropas portuguesas invadiram Espanha:</span><select class="custom-select" id="f10_vf_b"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>c) O exército espanhol derrotou as tropas portuguesas na Batalha de Alcântara:</span><select class="custom-select" id="f10_vf_c"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <div class="match-row"><span>d) Filipe II de Espanha foi aclamado rei nas Cortes de Tomar:</span><select class="custom-select" id="f10_vf_d"><option value="">--</option><option value="V">Verdadeiro</option><option value="F">Falso</option></select></div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMatching('f10', 'f10_q4', {f10_vf_a:'V', f10_vf_b:'F', f10_vf_c:'V', f10_vf_d:'V'}, 'Correto! a) V. b) F. c) V. d) V.')">Validar V/F</button>
+            <div class="feedback-box" id="fb-f10_q4"></div>
+          </div>
+
+          <div class="question-block" data-sheet="f10" data-qid="f10_q5">
+            <div class="question-header">
+              <div class="question-title">A Restauração da Independência (1 de Dezembro de 1640):</div>
+            </div>
+            <p style="font-size:0.88rem;">
+              No dia 1 de dezembro de 1640, um grupo de nobres revoltosos atacou o Paço Real e proclamou a Restauração da Independência. 
+              Aclamou-se como rei <select class="custom-select" id="f10_r_2"><option value="">--</option><option value="D. Joao IV">D. João, duque de Bragança (D. João IV)</option><option value="Filipe III">Filipe III</option></select>, 
+              dando início à dinastia de <select class="custom-select" id="f10_r_3"><option value="">--</option><option value="Braganca">Bragança</option><option value="Avis">Avis</option></select>.
+            </p>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkDropdown('f10', 'f10_q5', ['D. Joao IV', 'Braganca'], 'Correto! D. João, duque de Bragança, viria a ser aclamado rei nas Cortes de Lisboa, dando início à dinastia de Bragança.')">Validar</button>
+            <div class="feedback-box" id="fb-f10_q5"></div>
+          </div>
+        </div>
+
+        <div class="summary-report-card" id="report-f10" style="display:none;">
+          <h4>📊 Resumo de Desempenho</h4>
+          <p id="report-text-f10">A concluir a avaliação...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FOLHA DE REVISÃO ================= -->
+    <div id="tabExam" class="section-content">
+      <div class="exam-sheet">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2>Folha de Revisão Rápida para o Exame de HGP (5.º Ano)</h2>
+          <button class="btn btn-olive" onclick="printExamSheet()">🖨️ Imprimir Folha A4</button>
+        </div>
+        <div class="exam-grid">
+          <div class="exam-topic">
+            <h3>Comunidades Recoletoras</h3>
+            <ul>
+              <li>Caça, pesca e recoleção; <strong>nómadas</strong>.</li>
+              <li>Instrumentos: pedra lascada (bifaces, arpões e propulsores).</li>
+              <li>Fogo: aquecer, iluminar, afugentar animais ferozes, cozinhar e comunicar.</li>
+              <li>Arte rupestre: pinturas e gravuras em grutas ou rochas.</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Comunidades Agropastoris</h3>
+            <ul>
+              <li>Agricultura e pastorícia; <strong>sedentários</strong> em aldeamentos.</li>
+              <li>Técnicas: moagem, cerâmica, cestaria e tecelagem.</li>
+              <li>Megalitismo: antas/dólmens (sepulturas coletivas) e menires (culto).</li>
+              <li>Povos do séc. V a.C.: Iberos e Celtas.</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Povos Mediterrânicos</h3>
+            <ul>
+              <li>Fenícios (X a.C.): alfabeto e comércio de metais.</li>
+              <li>Gregos (VIII a.C.): moeda e cerâmica.</li>
+              <li>Cartagineses (V a.C.): salga de peixe e comércio.</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Romanos na Península</h3>
+            <ul>
+              <li>218 a.C.: início da conquista; resistência de <strong>Viriato</strong> e dos Lusitanos.</li>
+              <li>Romanização: latim, estradas, pontes, aquedutos, cidades e Direito.</li>
+              <li>Cristianismo: 313 (Milão) e 380 (oficializado por Teodósio).</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Os Muçulmanos</h3>
+            <ul>
+              <li>711: Batalha de Guadalete e ocupação peninsular comandada por Tárique.</li>
+              <li>Reconquista iniciada em Covadonga (722, Astúrias).</li>
+              <li>Herança: nora, azenha, laranjeiras, amendoeiras, azulejos e vocabulário "al-".</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Formação de Portugal</h3>
+            <ul>
+              <li>1096: Condado Portucalense doado a D. Henrique.</li>
+              <li>1128: Batalha de S. Mamede (D. Afonso Henriques no poder).</li>
+              <li>1143: Tratado de Zamora | 1179: Bula <em>Manifestis Probatum</em>.</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Portugal no Século XIII</h3>
+            <ul>
+              <li>1249: Conquista definitiva do Algarve por D. Afonso III.</li>
+              <li>1297: Tratado de Alcanizes (D. Dinis fixa fronteiras a este).</li>
+              <li>Sociedade: Clero, Nobreza (privilegiados) e Povo (trabalho e impostos).</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Crise de 1383-1385</h3>
+            <ul>
+              <li>Morte de D. Fernando e Tratado de Salvaterra de Magos (1383).</li>
+              <li>D. João, Mestre de Avis e D. Nuno Álvares Pereira (tática do quadrado).</li>
+              <li>14 de Agosto de 1385: Batalha de Aljubarrota e Dinastia de Avis.</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>Séculos XV e XVI (Expansão)</h3>
+            <ul>
+              <li>1415: Ceuta | 1434: Cabo Bojador (Gil Eanes).</li>
+              <li>1494: Tratado de Tordesilhas (divisão a 370 léguas de Cabo Verde).</li>
+              <li>1498: Índia (Vasco da Gama) | 1500: Brasil (Pedro Álvares Cabral).</li>
+              <li>Arte Manuelina: cordas, redes, esfera armilar e cruz de Cristo.</li>
+            </ul>
+          </div>
+          <div class="exam-topic">
+            <h3>União Ibérica à Restauração</h3>
+            <ul>
+              <li>1578: Batalha de Alcácer Quibir | 1580: União Ibérica sob Filipe II.</li>
+              <li>1 de Dezembro de 1640: Restauração da Independência pelos Conjurados.</li>
+              <li>Aclamação de D. João IV: início da Dinastia de Bragança.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Teodósio Faria &copy; setembro 2026, Recuperação da Matéria do 5.º ano de HGP
+  </footer>
+
+  <script>
+    const SHEET_ORDER = ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10'];
+    const QUESTIONS_PER_SHEET = {
+      f1: ['f1_q1','f1_q21','f1_q22','f1_q3','f1_q4','f1_q51','f1_q52','f1_q61','f1_q62'],
+      f2: ['f2_q1','f2_q21','f2_q22','f2_q3','f2_q4','f2_q5'],
+      f3: ['f3_q1','f3_q21','f3_q22'],
+      f4: ['f4_q1','f4_q15','f4_q151','f4_q2','f4_q3','f4_q4'],
+      f5: ['f5_q1','f5_q21','f5_q22','f5_q3','f5_q4'],
+      f6: ['f6_q11','f6_q12','f6_q2','f6_q3','f6_q4','f6_q5'],
+      f7: ['f7_q1','f7_q2','f7_q3','f7_q4','f7_q5'],
+      f8: ['f8_q1','f8_q2','f8_q3','f8_q4','f8_q5'],
+      f9: ['f9_q1','f9_q2','f9_q31','f9_q6','f9_q7','f9_q10'],
+      f10: ['f10_q1','f10_q3','f10_q4','f10_q5']
+    };
+
+    const SHEET_TITLES = {
+      f1: 'Comunidades Recoletoras',
+      f2: 'Comunidades Agropastoris',
+      f3: 'Povos Mediterrânicos',
+      f4: 'Romanos na P. Ibérica',
+      f5: 'Os Muçulmanos',
+      f6: 'Formação de Portugal',
+      f7: 'Portugal no Século XIII',
+      f8: '1383-1385 Revolução',
+      f9: 'Séculos XV e XVI',
+      f10: 'União à Restauração'
+    };
+
+    let currentFontLevel = 0;
+    const fontSizes = ['0.92rem', '1rem', '1.12rem'];
+
+    function changeFontSize(delta) {
+      currentFontLevel = Math.max(0, Math.min(2, currentFontLevel + delta));
+      document.documentElement.style.setProperty('--font-scale', fontSizes[currentFontLevel]);
+    }
+
+    function toggleHint(hintId) {
+      const h = document.getElementById(hintId);
+      if (h) h.classList.toggle('active');
+    }
+
+    function shuffleOptions() {
+      document.querySelectorAll('.options-group[data-shuffle="true"]').forEach(group => {
+        const buttons = Array.from(group.children);
+        for (let i = buttons.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          group.appendChild(buttons[j]);
+        }
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+
+      const btn = document.getElementById('tabbtn-' + tabId);
+      if (btn) btn.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openGuideModal() { document.getElementById('userGuideModal').classList.add('active'); }
+    function closeGuideModal() { document.getElementById('userGuideModal').classList.remove('active'); }
+
+    function openImageModal(src, caption) {
+      document.getElementById('modalImg').src = src;
+      document.getElementById('modalCaption').innerText = caption;
+      document.getElementById('imageModal').classList.add('active');
+    }
+    function closeImageModal() { document.getElementById('imageModal').classList.remove('active'); }
+
+    function openCertModal() {
+      updateCertificateData();
+      document.getElementById('certModal').classList.add('active');
+    }
+    function closeCertModal() { document.getElementById('certModal').classList.remove('active'); }
+
+    function printCertificate() {
+      const nameInput = document.getElementById('studentNameInput');
+      if (!nameInput.value.trim()) {
+        alert('Por favor, escreve o teu nome completo antes de imprimir o certificado.');
+        nameInput.focus();
+        return;
+      }
+
+      addCertPageStyle();
+      document.body.classList.add('printing-certificate');
+      window.print();
+
+      // Salvaguarda para navegadores que não disparem 'afterprint'
+      // (o cleanup é idempotente, por isso não há risco de o correr duas vezes)
+      setTimeout(cleanupCertPrint, 3000);
+    }
+
+    function addCertPageStyle() {
+      if (document.getElementById('certPageStyle')) return;
+      const style = document.createElement('style');
+      style.id = 'certPageStyle';
+      style.innerHTML = '@page { size: landscape; margin: 1.2cm; }';
+      document.head.appendChild(style);
+    }
+
+    function cleanupCertPrint() {
+      document.body.classList.remove('printing-certificate');
+      const style = document.getElementById('certPageStyle');
+      if (style) style.remove();
+    }
+
+    // O evento 'afterprint' dispara assim que a caixa de diálogo de impressão
+    // fecha (imprimir ou cancelar), o que é muito mais fiável do que um
+    // temporizador fixo — este último podia retirar o modo de impressão do
+    // certificado a meio da pré-visualização, antes de o utilizador terminar.
+    window.addEventListener('afterprint', cleanupCertPrint);
+
+    function printExamSheet() {
+      window.print();
+    }
+
+    function updateCertificateData() {
+      const now = new Date();
+      document.getElementById('certDateSpan').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      let totalQ = 0;
+      let totalCorrect = 0;
+
+      SHEET_ORDER.forEach(s => {
+        const qList = QUESTIONS_PER_SHEET[s] || [];
+        totalQ += qList.length;
+        qList.forEach(qid => {
+          if (store[qid] && store[qid].isCorrect) totalCorrect++;
+        });
+      });
+
+      const globalPercent = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0;
+      document.getElementById('certScoreSpan').innerText = `${globalPercent}%`;
+    }
+
+    function updateBadges(store) {
+      function isSheetDone(sheetId) {
+        const qList = QUESTIONS_PER_SHEET[sheetId] || [];
+        if (qList.length === 0) return false;
+        let c = 0;
+        qList.forEach(qid => { if (store[qid] && store[qid].isCorrect) c++; });
+        return (c / qList.length) >= 0.7;
+      }
+
+      if (isSheetDone('f1') && isSheetDone('f2')) {
+        const b = document.getElementById('badge-prehistoria');
+        b.classList.add('unlocked');
+        b.innerText = '⭐ Explorador da Pré-História';
+      }
+      if (isSheetDone('f6')) {
+        const b = document.getElementById('badge-fundador');
+        b.classList.add('unlocked');
+        b.innerText = '⚔️ Fundador do Reino';
+      }
+      if (isSheetDone('f9')) {
+        const b = document.getElementById('badge-navegador');
+        b.classList.add('unlocked');
+        b.innerText = '🧭 Navegador dos Mares';
+      }
+      if (isSheetDone('f10')) {
+        const b = document.getElementById('badge-restaurador');
+        b.classList.add('unlocked');
+        b.innerText = '👑 Restaurador da Pátria';
+      }
+    }
+
+    function updateSheetScore(sheetId) {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      const qList = QUESTIONS_PER_SHEET[sheetId] || [];
+      let correct = 0;
+
+      qList.forEach(qid => {
+        if (store[qid] && store[qid].isCorrect) correct++;
+      });
+
+      const total = qList.length;
+      const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+      const scoreEl = document.getElementById(`score-${sheetId}`);
+      const fillEl = document.getElementById(`pfill-${sheetId}`);
+      if (scoreEl) scoreEl.innerText = `Aproveitamento: ${percent}% (Necessário ≥ 70%)`;
+      if (fillEl) fillEl.style.width = `${percent}%`;
+
+      const repCard = document.getElementById(`report-${sheetId}`);
+      const repText = document.getElementById(`report-text-${sheetId}`);
+      if (repCard && repText && total > 0) {
+        repCard.style.display = 'block';
+        if (percent >= 70) {
+          repText.innerHTML = `<strong>Parabéns!</strong> Acertaste <strong>${correct} de ${total}</strong> perguntas nesta ficha (${percent}%). O tópico de <em>${SHEET_TITLES[sheetId]}</em> foi consolidado com sucesso!`;
+        } else {
+          repText.innerHTML = `Obtiveste <strong>${correct} de ${total}</strong> perguntas corretas (${percent}%). Revê os conceitos com a ajuda das pistas e tenta novamente para atingires os 70%!`;
+        }
+      }
+
+      const sIdx = SHEET_ORDER.indexOf(sheetId);
+      if (percent >= 70 && sIdx < SHEET_ORDER.length - 1) {
+        const nextTabId = `tab${sIdx + 2}`;
+        const nextBtn = document.getElementById(`tabbtn-${nextTabId}`);
+        if (nextBtn) {
+          nextBtn.disabled = false;
+          nextBtn.innerText = nextBtn.innerText.replace('🔒 ', '');
+        }
+        const lockEl = document.getElementById(`lock-${sheetId}`);
+        if (lockEl) lockEl.innerText = `🔓 Ficha seguinte desbloqueada!`;
+      }
+
+      updateBadges(store);
+    }
+
+    function checkAnswer(sheetId, qid, clickedBtn, feedback) {
+      const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+      if (!qBlock) return;
+
+      const btns = qBlock.querySelectorAll('.option-btn');
+      btns.forEach(btn => {
+        btn.disabled = true;
+        if (btn.getAttribute('data-correct') === 'true') {
+          btn.classList.add('selected-correct');
+        } else if (btn === clickedBtn) {
+          btn.classList.add('selected-incorrect');
+        }
+      });
+
+      const isCorrect = (clickedBtn.getAttribute('data-correct') === 'true');
+      showFeedback(qid, isCorrect, feedback);
+      saveState(qid, { type: 'single', selectedText: clickedBtn.innerText, isCorrect });
+      updateSheetScore(sheetId);
+    }
+
+    function checkMultipleSelect(sheetId, qid, correctArray, feedback) {
+      const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+      const checkboxes = qBlock.querySelectorAll('input[type="checkbox"]');
+      let selected = [];
+      checkboxes.forEach((cb, idx) => {
+        if (cb.checked) selected.push(idx);
+        cb.disabled = true;
+      });
+
+      const isCorrect = (JSON.stringify(selected.sort()) === JSON.stringify(correctArray.sort()));
+      showFeedback(qid, isCorrect, feedback);
+      saveState(qid, { type: 'multi', selected, isCorrect });
+      updateSheetScore(sheetId);
+    }
+
+    function checkDropdown(sheetId, qid, correctValues, feedback) {
+      const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+      const selects = qBlock.querySelectorAll('select.custom-select');
+      let values = [];
+      let isCorrect = true;
+
+      selects.forEach((sel, idx) => {
+        values.push(sel.value);
+        if (sel.value !== correctValues[idx]) isCorrect = false;
+        sel.disabled = true;
+      });
+
+      showFeedback(qid, isCorrect, feedback);
+      saveState(qid, { type: 'dropdown', values, isCorrect });
+      updateSheetScore(sheetId);
+    }
+
+    function checkMatching(sheetId, qid, matchMap, feedback) {
+      let isCorrect = true;
+      let values = {};
+
+      for (const id in matchMap) {
+        const el = document.getElementById(id);
+        values[id] = el.value;
+        if (el.value !== matchMap[id]) isCorrect = false;
+        el.disabled = true;
+      }
+
+      showFeedback(qid, isCorrect, feedback);
+      saveState(qid, { type: 'match', values, isCorrect });
+      updateSheetScore(sheetId);
+    }
+
+    function moveItem(listId, direction, btn) {
+      const item = btn.closest('.order-item');
+      const list = document.getElementById(listId);
+      if (direction === -1 && item.previousElementSibling) {
+        list.insertBefore(item, item.previousElementSibling);
+      } else if (direction === 1 && item.nextElementSibling) {
+        list.insertBefore(item.nextElementSibling, item);
+      }
+    }
+
+    function checkOrder(sheetId, qid, listId, correctOrder, feedback) {
+      const list = document.getElementById(listId);
+      const items = list.querySelectorAll('.order-item');
+      let currentOrder = Array.from(items).map(i => i.getAttribute('data-val'));
+
+      const isCorrect = (JSON.stringify(currentOrder) === JSON.stringify(correctOrder));
+      showFeedback(qid, isCorrect, feedback);
+
+      list.querySelectorAll('button').forEach(b => b.disabled = true);
+      saveState(qid, { type: 'order', order: currentOrder, isCorrect });
+      updateSheetScore(sheetId);
+    }
+
+    function showFeedback(qid, isCorrect, text) {
+      const fbBox = document.getElementById(`fb-${qid}`);
+      if (!fbBox) return;
+      fbBox.className = `feedback-box ${isCorrect ? 'correct' : 'incorrect'}`;
+      fbBox.innerHTML = `<strong>${isCorrect ? 'Correto!' : 'Atenção:'}</strong> ${text}`;
+    }
+
+    function saveState(qid, data) {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      store[qid] = data;
+      localStorage.setItem('hgp5_all_official_answers', JSON.stringify(store));
+    }
+
+    function retrySheet(sheetId) {
+      if (confirm(`Queres reiniciar apenas a ficha de ${SHEET_TITLES[sheetId]} e tentar novamente?`)) {
+        const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+        const qList = QUESTIONS_PER_SHEET[sheetId] || [];
+        qList.forEach(qid => { delete store[qid]; });
+        localStorage.setItem('hgp5_all_official_answers', JSON.stringify(store));
+        location.reload();
+      }
+    }
+
+    function loadState() {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      for (const qid in store) {
+        const data = store[qid];
+        const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+        if (!qBlock) continue;
+
+        if (data.type === 'single') {
+          const btns = qBlock.querySelectorAll('.option-btn');
+          btns.forEach(b => {
+            if (b.innerText === data.selectedText) b.click();
+          });
+        } else if (data.type === 'multi') {
+          const checkboxes = qBlock.querySelectorAll('input[type="checkbox"]');
+          data.selected.forEach(idx => { if (checkboxes[idx]) checkboxes[idx].checked = true; });
+          const confirmBtn = qBlock.querySelector('button.btn-bronze');
+          if (confirmBtn) confirmBtn.click();
+        } else if (data.type === 'dropdown') {
+          const selects = qBlock.querySelectorAll('select.custom-select');
+          data.values.forEach((v, idx) => { if (selects[idx]) selects[idx].value = v; });
+          const confirmBtn = qBlock.querySelector('button.btn-bronze');
+          if (confirmBtn) confirmBtn.click();
+        } else if (data.type === 'match') {
+          for (const id in data.values) {
+            const el = document.getElementById(id);
+            if (el) el.value = data.values[id];
+          }
+          const confirmBtn = qBlock.querySelector('button.btn-bronze');
+          if (confirmBtn) confirmBtn.click();
+        }
+      }
+
+      SHEET_ORDER.forEach(s => updateSheetScore(s));
+      updateBadges(store);
+    }
+
+    function resetProgress() {
+      if (confirm('Tens a certeza de que desejas apagar todo o progresso de todas as fichas e reiniciar?')) {
+        localStorage.removeItem('hgp5_all_official_answers');
+        location.reload();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      shuffleOptions();
+      loadState();
+    });
+  </script>
+</body>
+</html>
