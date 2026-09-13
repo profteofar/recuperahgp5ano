@@ -414,6 +414,11 @@
       accent-color: var(--olive-green);
     }
 
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+    }
+
     .order-list {
       display: flex;
       flex-direction: column;
@@ -1147,12 +1152,14 @@
             <div class="question-header">
               <div class="question-title">Preenche o esquema selecionando as vantagens da descoberta e produção do fogo:</div>
             </div>
-            <label class="checkbox-item"><input type="checkbox" id="f1_q4_0"> Aquecer e iluminar as cavernas</label>
-            <label class="checkbox-item"><input type="checkbox" id="f1_q4_1"> Afugentar animais ferozes</label>
-            <label class="checkbox-item"><input type="checkbox" id="f1_q4_2"> Cozinhar os alimentos</label>
-            <label class="checkbox-item"><input type="checkbox" id="f1_q4_3"> Contribuir para o desenvolvimento da linguagem</label>
-            <label class="checkbox-item"><input type="checkbox" id="f1_q4_4"> Fundição de moedas de prata</label>
-            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('f1', 'f1_q4', [0,1,2,3], 'Correto! Aquecer e iluminar as cavernas; afugentar animais ferozes; cozinhar os alimentos; desenvolvimento da linguagem.')">Confirmar</button>
+            <div class="checkbox-group" data-shuffle="true">
+              <label class="checkbox-item"><input type="checkbox" data-correct="true" id="f1_q4_0"> Aquecer e iluminar as cavernas</label>
+              <label class="checkbox-item"><input type="checkbox" data-correct="true" id="f1_q4_1"> Afugentar animais ferozes</label>
+              <label class="checkbox-item"><input type="checkbox" data-correct="true" id="f1_q4_2"> Cozinhar os alimentos</label>
+              <label class="checkbox-item"><input type="checkbox" data-correct="true" id="f1_q4_3"> Contribuir para o desenvolvimento da linguagem</label>
+              <label class="checkbox-item"><input type="checkbox" id="f1_q4_4"> Fundição de moedas de prata</label>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('f1', 'f1_q4', 'Correto! Aquecer e iluminar as cavernas; afugentar animais ferozes; cozinhar os alimentos; desenvolvimento da linguagem.')">Confirmar</button>
             <div class="feedback-box" id="fb-f1_q4"></div>
           </div>
 
@@ -1568,11 +1575,13 @@
             <div class="question-header">
               <div class="question-title">Seleciona duas razões que levaram os muçulmanos a conquistar a Península Ibérica:</div>
             </div>
-            <label class="checkbox-item"><input type="checkbox" id="f5_q21_0"> Acesso a terras mais ricas e férteis</label>
-            <label class="checkbox-item"><input type="checkbox" id="f5_q21_1"> Procura de territórios com outros árabes</label>
-            <label class="checkbox-item"><input type="checkbox" id="f5_q21_2"> Expansão da fé islâmica</label>
-            <label class="checkbox-item"><input type="checkbox" id="f5_q21_3"> Difusão do cristianismo</label>
-            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('f5', 'f5_q21', [0,2], 'Correto! Acesso a terras mais ricas e férteis e expansão da fé islâmica.')">Confirmar</button>
+            <div class="checkbox-group" data-shuffle="true">
+              <label class="checkbox-item"><input type="checkbox" data-correct="true" id="f5_q21_0"> Acesso a terras mais ricas e férteis</label>
+              <label class="checkbox-item"><input type="checkbox" id="f5_q21_1"> Procura de territórios com outros árabes</label>
+              <label class="checkbox-item"><input type="checkbox" data-correct="true" id="f5_q21_2"> Expansão da fé islâmica</label>
+              <label class="checkbox-item"><input type="checkbox" id="f5_q21_3"> Difusão do cristianismo</label>
+            </div>
+            <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('f5', 'f5_q21', 'Correto! Acesso a terras mais ricas e férteis e expansão da fé islâmica.')">Confirmar</button>
             <div class="feedback-box" id="fb-f5_q21"></div>
           </div>
 
@@ -2242,11 +2251,28 @@
     }
 
     function shuffleOptions() {
-      document.querySelectorAll('.options-group[data-shuffle="true"]').forEach(group => {
-        const buttons = Array.from(group.children);
-        for (let i = buttons.length - 1; i > 0; i--) {
+      // Seletor genérico: cobre tanto os grupos de escolha única
+      // (.options-group) como os de resposta múltipla (.checkbox-group) —
+      // ambos identificam a resposta certa por atributo (data-correct),
+      // nunca por posição, por isso é seguro reordenar os filhos.
+      document.querySelectorAll('[data-shuffle="true"]').forEach(group => {
+        const items = Array.from(group.children);
+        for (let i = items.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          group.appendChild(buttons[j]);
+          group.appendChild(items[j]);
+        }
+      });
+    }
+
+    function shuffleOrderLists() {
+      // As perguntas de ordenação identificam cada item pelo seu data-val,
+      // nunca pela posição inicial — por isso também é seguro baralhá-las.
+      // Sem isto, a pergunta "nascia" sempre já na ordem correta.
+      document.querySelectorAll('.order-list').forEach(list => {
+        const items = Array.from(list.children);
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          list.appendChild(items[j]);
         }
       });
     }
@@ -2621,18 +2647,21 @@
       refreshScore(sheetId);
     }
 
-    function checkMultipleSelect(sheetId, qid, correctArray, feedback) {
+    function checkMultipleSelect(sheetId, qid, feedback) {
       const qBlock = document.querySelector(`[data-qid="${qid}"]`);
       const checkboxes = qBlock.querySelectorAll('input[type="checkbox"]');
-      let selected = [];
-      checkboxes.forEach((cb, idx) => {
-        if (cb.checked) selected.push(idx);
+      let allCorrect = true;
+      let selectedIds = [];
+
+      checkboxes.forEach(cb => {
+        const shouldBeChecked = cb.getAttribute('data-correct') === 'true';
+        if (cb.checked) selectedIds.push(cb.id);
+        if (cb.checked !== shouldBeChecked) allCorrect = false;
         cb.disabled = true;
       });
 
-      const isCorrect = (JSON.stringify(selected.sort()) === JSON.stringify(correctArray.sort()));
-      showFeedback(qid, isCorrect, feedback);
-      saveState(qid, { type: 'multi', selected, isCorrect });
+      showFeedback(qid, allCorrect, feedback);
+      saveState(qid, { type: 'multi', selectedIds, isCorrect: allCorrect });
       refreshScore(sheetId);
     }
 
@@ -2803,8 +2832,8 @@
             if (b.innerText === data.selectedText) b.click();
           });
         } else if (data.type === 'multi') {
-          const checkboxes = qBlock.querySelectorAll('input[type="checkbox"]');
-          data.selected.forEach(idx => { if (checkboxes[idx]) checkboxes[idx].checked = true; });
+          const ids = data.selectedIds || [];
+          ids.forEach(id => { const cb = document.getElementById(id); if (cb) cb.checked = true; });
           const confirmBtn = qBlock.querySelector('button.btn-bronze');
           if (confirmBtn) confirmBtn.click();
         } else if (data.type === 'dropdown') {
@@ -2886,7 +2915,7 @@
 
       document.querySelectorAll('.question-block').forEach(block => {
         const titleEl = block.querySelector('.question-title');
-        const optsGroup = block.querySelector('.options-group');
+        const optsGroup = block.querySelector('.options-group, .checkbox-group');
         if (titleEl && optsGroup) {
           optsGroup.setAttribute('role', 'group');
           optsGroup.setAttribute('aria-label', titleEl.textContent.trim());
@@ -2915,6 +2944,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       shuffleOptions();
+      shuffleOrderLists();
       loadState();
       enhanceAccessibility();
     });
