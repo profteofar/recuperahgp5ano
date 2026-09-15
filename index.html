@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recuperação da Matéria do 5.º ano de HGP</title>
+  <title>Recuperação da Matéria de HGP - 5.º Ano</title>
   <style>
     :root {
       --bg-slate: #23272e;
@@ -662,6 +662,50 @@
     }
     .diag-topic-heading:first-child { margin-top: 0; }
 
+    /* ===== Tentar de Novo por Pergunta / Resumo de Erros / Banco de Reforço ===== */
+    .btn-retry-question {
+      display: none;
+      margin-top: 0.5rem;
+      background: rgba(107, 142, 35, 0.12);
+      border: 1px solid var(--olive-green);
+      color: var(--olive-green);
+      padding: 0.35rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-retry-question:hover { background: rgba(107, 142, 35, 0.22); }
+
+    .report-error-item {
+      background: rgba(0, 0, 0, 0.2);
+      border-left: 3px solid var(--danger);
+      padding: 0.6rem 0.8rem;
+      border-radius: 0 4px 4px 0;
+      margin: 0.6rem 0;
+    }
+    .report-error-question {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 0.3rem;
+      color: var(--text-main);
+    }
+    .report-error-explanation {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .reinforce-badge {
+      background: var(--danger);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.05rem 0.4rem;
+      margin-left: 0.3rem;
+    }
+
     footer {
       background-color: var(--coffee);
       color: #dcdfe4;
@@ -772,7 +816,7 @@
 
   <header>
     <div class="header-titles">
-      <h1>Recuperação da Matéria do 5.º Ano de HGP</h1>
+      <h1>Recuperação da Matéria de HGP - 5.º Ano</h1>
     </div>
     <div class="header-actions">
       <div class="font-resizer" title="Ajustar Tamanho de Letra">
@@ -780,6 +824,7 @@
         <button class="btn-resize" onclick="changeFontSize(1)" aria-label="Aumentar tamanho da letra">A+</button>
       </div>
       <button class="btn btn-outline" onclick="openProgressModal()">📊 Progresso Geral</button>
+      <button class="btn btn-outline" onclick="openReinforceModal()">🔁 Banco de Reforço<span class="reinforce-badge" id="reinforceCountBadge" style="display:none;"></span></button>
       <button class="btn btn-outline" onclick="openCertModal()">🎓 Ver Diploma</button>
       <button class="btn btn-outline" onclick="openGuideModal()">📖 Guia</button>
       <button class="btn btn-olive" onclick="resetProgress()">🔄 Repor Tudo</button>
@@ -884,6 +929,21 @@
         </div>
       </div>
     </div>
+
+    <div class="modal-overlay" id="reinforceModal">
+      <div class="modal-window" style="max-width: 750px;">
+        <button class="modal-close" onclick="closeReinforceModal()">&times;</button>
+        <h2 style="color: var(--bronze); margin-bottom: 0.5rem;">🔁 Banco de Reforço</h2>
+        <p style="font-size: 0.85rem; margin-bottom: 1rem;">
+          Aqui juntamos, de todas as fichas, as perguntas que ainda tens de rever. Podes voltar a elas a qualquer momento — repeti-las passado uns dias ajuda a fixar melhor a matéria do que repeti-las já a seguir.
+        </p>
+        <div id="reinforceListContainer" style="max-height: 55vh; overflow-y: auto;"><!-- preenchido via JS --></div>
+        <div style="display:flex; justify-content: flex-end; margin-top: 1rem;">
+          <button class="btn btn-outline" onclick="closeReinforceModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+
 
     <!-- ================= FICHA DIAGNÓSTICO ================= -->
     <div id="tabDiag" class="section-content">
@@ -2613,8 +2673,116 @@
         if (lockEl) lockEl.innerText = `🔓 Ficha seguinte desbloqueada!`;
       }
 
+      renderSheetErrorSummary(sheetId, store, qList);
+      updateReinforceBadge();
       updateBadges(store);
     }
+
+    // Lista, dentro do cartão de resumo da ficha, as perguntas ainda erradas
+    // com a explicação já guardada e um atalho para as tentar de novo ali mesmo.
+    function renderSheetErrorSummary(sheetId, store, qList) {
+      const container = document.getElementById(`report-errors-${sheetId}`);
+      if (!container) return;
+
+      const wrongQids = qList.filter(qid => store[qid] && store[qid].isCorrect === false);
+      if (wrongQids.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '<h4 style="margin-top:1rem;">📝 Perguntas a Rever Nesta Ficha</h4>';
+      wrongQids.forEach(qid => {
+        const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+        const titleEl = qBlock ? qBlock.querySelector('.question-title') : null;
+        const title = titleEl ? titleEl.textContent.trim() : qid;
+        const explanation = (store[qid].feedbackText || '').replace(/^(Correto!|Incorreto\.)\s*/i, '');
+        html += `
+          <div class="report-error-item">
+            <p class="report-error-question">${title}</p>
+            <p class="report-error-explanation">💡 ${explanation}</p>
+            <button class="btn-retry-question" style="display:inline-block;" onclick="jumpToQuestion('${qid}')">🔄 Tentar Esta Pergunta</button>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // Reativa uma pergunta específica e leva o aluno até ela — usado tanto no
+    // resumo de erros da própria ficha como no Banco de Reforço global.
+    function jumpToQuestion(qid, sheetId) {
+      if (sheetId) switchTab('tab' + sheetId.slice(1));
+      retryQuestion(qid);
+      setTimeout(() => {
+        const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+        if (qBlock) qBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, sheetId ? 150 : 0);
+    }
+
+    // ===================== Banco de Reforço =====================
+
+    function computeAllWrongQuestions() {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      const results = [];
+      SHEET_ORDER.forEach(sheetId => {
+        (QUESTIONS_PER_SHEET[sheetId] || []).forEach(qid => {
+          if (store[qid] && store[qid].isCorrect === false) {
+            results.push({ sheetId, qid });
+          }
+        });
+      });
+      return results;
+    }
+
+    function updateReinforceBadge() {
+      const badge = document.getElementById('reinforceCountBadge');
+      if (!badge) return;
+      const count = computeAllWrongQuestions().length;
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function renderReinforceBank() {
+      const container = document.getElementById('reinforceListContainer');
+      if (!container) return;
+
+      const wrongs = computeAllWrongQuestions();
+      updateReinforceBadge();
+
+      if (wrongs.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:2rem 0;">🎉 Não tens perguntas pendentes de reforço neste momento. Continua assim!</p>';
+        return;
+      }
+
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      let html = '';
+      let lastSheet = null;
+      wrongs.forEach(({ sheetId, qid }) => {
+        if (sheetId !== lastSheet) {
+          html += `<h3 class="diag-topic-heading">${SHEET_TITLES[sheetId]}</h3>`;
+          lastSheet = sheetId;
+        }
+        const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+        const titleEl = qBlock ? qBlock.querySelector('.question-title') : null;
+        const title = titleEl ? titleEl.textContent.trim() : qid;
+        const explanation = (store[qid].feedbackText || '').replace(/^(Correto!|Incorreto\.)\s*/i, '');
+        html += `
+          <div class="report-error-item">
+            <p class="report-error-question">${title}</p>
+            <p class="report-error-explanation">💡 ${explanation}</p>
+            <button class="btn-retry-question" style="display:inline-block;" onclick="jumpToQuestion('${qid}', '${sheetId}')">🔄 Tentar Esta Pergunta</button>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function openReinforceModal() {
+      renderReinforceBank();
+      document.getElementById('reinforceModal').classList.add('active');
+    }
+    function closeReinforceModal() { document.getElementById('reinforceModal').classList.remove('active'); }
 
     // Direciona a atualização de pontuação: para as fichas normais mantém o
     // comportamento já existente (updateSheetScore); para a Ficha Diagnóstico
@@ -2643,7 +2811,8 @@
 
       const isCorrect = (clickedBtn.getAttribute('data-correct') === 'true');
       showFeedback(qid, isCorrect, feedback);
-      saveState(qid, { type: 'single', selectedText: clickedBtn.innerText, isCorrect });
+      const saved = saveState(qid, { type: 'single', selectedText: clickedBtn.innerText, isCorrect, feedbackText: feedback });
+      handlePostAnswer(qid, isCorrect, saved.attempts);
       refreshScore(sheetId);
     }
 
@@ -2661,7 +2830,8 @@
       });
 
       showFeedback(qid, allCorrect, feedback);
-      saveState(qid, { type: 'multi', selectedIds, isCorrect: allCorrect });
+      const saved = saveState(qid, { type: 'multi', selectedIds, isCorrect: allCorrect, feedbackText: feedback });
+      handlePostAnswer(qid, allCorrect, saved.attempts);
       refreshScore(sheetId);
     }
 
@@ -2678,7 +2848,8 @@
       });
 
       showFeedback(qid, isCorrect, feedback);
-      saveState(qid, { type: 'dropdown', values, isCorrect });
+      const saved = saveState(qid, { type: 'dropdown', values, isCorrect, feedbackText: feedback });
+      handlePostAnswer(qid, isCorrect, saved.attempts);
       refreshScore(sheetId);
     }
 
@@ -2694,7 +2865,8 @@
       }
 
       showFeedback(qid, isCorrect, feedback);
-      saveState(qid, { type: 'match', values, isCorrect });
+      const saved = saveState(qid, { type: 'match', values, isCorrect, feedbackText: feedback });
+      handlePostAnswer(qid, isCorrect, saved.attempts);
       refreshScore(sheetId);
     }
 
@@ -2717,7 +2889,8 @@
       showFeedback(qid, isCorrect, feedback);
 
       list.querySelectorAll('button').forEach(b => b.disabled = true);
-      saveState(qid, { type: 'order', order: currentOrder, isCorrect });
+      const saved = saveState(qid, { type: 'order', order: currentOrder, isCorrect, feedbackText: feedback });
+      handlePostAnswer(qid, isCorrect, saved.attempts);
       refreshScore(sheetId);
     }
 
@@ -2730,8 +2903,91 @@
 
     function saveState(qid, data) {
       const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      const previous = store[qid];
+      data.attempts = (previous && previous.attempts) ? previous.attempts + 1 : 1;
       store[qid] = data;
       localStorage.setItem('hgp5_all_official_answers', JSON.stringify(store));
+      return data;
+    }
+
+    // Reage depois de qualquer pergunta ser corrigida: mostra o botão de
+    // "tentar de novo" e, se já for a 2ª tentativa (ou mais) e continuar
+    // errada, revela automaticamente a dica (se existir), como reforço.
+    function handlePostAnswer(qid, isCorrect, attempts) {
+      const retryBtn = document.getElementById(`retry-${qid}`);
+      if (retryBtn) retryBtn.style.display = 'inline-block';
+
+      if (!isCorrect && attempts >= 2) {
+        const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+        const hintBox = qBlock ? qBlock.querySelector('.hint-box') : null;
+        if (hintBox) hintBox.classList.add('active');
+      }
+    }
+
+    // Repõe apenas UMA pergunta para nova tentativa, sem tocar nas restantes
+    // da ficha. Funciona com qualquer um dos 5 tipos de pergunta.
+    function retryQuestion(qid) {
+      const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+      if (!qBlock) return;
+
+      qBlock.querySelectorAll('.option-btn').forEach(b => {
+        b.disabled = false;
+        b.classList.remove('selected-correct', 'selected-incorrect');
+      });
+
+      qBlock.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.disabled = false;
+        cb.checked = false;
+      });
+
+      qBlock.querySelectorAll('select.custom-select').forEach(sel => {
+        sel.disabled = false;
+        sel.value = '';
+      });
+
+      const orderList = qBlock.querySelector('.order-list');
+      if (orderList) {
+        orderList.querySelectorAll('button').forEach(b => { b.disabled = false; });
+        // Baralha de novo, para ser um desafio genuíno e não apenas repetir a mesma disposição.
+        const items = Array.from(orderList.children);
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          orderList.appendChild(items[j]);
+        }
+      }
+
+      const fbBox = document.getElementById(`fb-${qid}`);
+      if (fbBox) { fbBox.className = 'feedback-box'; fbBox.innerHTML = ''; }
+      const retryBtn = document.getElementById(`retry-${qid}`);
+      if (retryBtn) retryBtn.style.display = 'none';
+    }
+
+    // Injeta o botão de "tentar de novo" a seguir a cada caixa de feedback,
+    // sem precisar de o escrever à mão em todas as perguntas existentes.
+    function injectRetryButtons() {
+      document.querySelectorAll('.feedback-box').forEach(fb => {
+        const qid = fb.id.replace('fb-', '');
+        if (!qid || document.getElementById(`retry-${qid}`)) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-retry-question';
+        btn.id = `retry-${qid}`;
+        btn.textContent = '🔄 Tentar Esta Pergunta';
+        btn.onclick = () => retryQuestion(qid);
+        fb.insertAdjacentElement('afterend', btn);
+      });
+    }
+
+    // Prepara, dentro do cartão de resumo de cada ficha, o espaço onde entra
+    // a lista de perguntas ainda erradas (populada por renderSheetErrorSummary).
+    function injectErrorSummaryContainers() {
+      document.querySelectorAll('.summary-report-card').forEach(card => {
+        const sheetId = card.id.replace('report-', '');
+        if (!sheetId || document.getElementById(`report-errors-${sheetId}`)) return;
+        const container = document.createElement('div');
+        container.id = `report-errors-${sheetId}`;
+        card.appendChild(container);
+      });
     }
 
     function retrySheet(sheetId) {
@@ -2945,6 +3201,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       shuffleOptions();
       shuffleOrderLists();
+      injectRetryButtons();
+      injectErrorSummaryContainers();
       loadState();
       enhanceAccessibility();
     });
