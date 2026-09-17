@@ -2337,6 +2337,25 @@
       });
     }
 
+    function shuffleSelectOptions() {
+      // As perguntas de correspondência e de preencher espaços usam <select>,
+      // cuja correção compara sempre o VALOR escolhido (option.value), nunca
+      // a posição — por isso é seguro baralhar a ordem visual das opções.
+      // Sem isto, em muitas perguntas a resposta certa era sempre a 1ª opção
+      // do menu, ou a linha N correspondia sempre à opção N: um padrão
+      // adivinhável sem necessidade de ler o enunciado.
+      document.querySelectorAll('select.custom-select').forEach(sel => {
+        // A 1ª opção é sempre o placeholder (value=""); mantém-se fixa no
+        // topo e só as opções reais (a partir do índice 1) são baralhadas.
+        const options = Array.from(sel.options).slice(1);
+        for (let i = options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]];
+        }
+        options.forEach(opt => sel.appendChild(opt));
+      });
+    }
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -2943,6 +2962,14 @@
       qBlock.querySelectorAll('select.custom-select').forEach(sel => {
         sel.disabled = false;
         sel.value = '';
+        // Baralha de novo as opções do menu, pela mesma razão das listas de
+        // ordenação: repetir a mesma disposição já vista não é um desafio novo.
+        const options = Array.from(sel.options).slice(1);
+        for (let i = options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]];
+        }
+        options.forEach(opt => sel.appendChild(opt));
       });
 
       const orderList = qBlock.querySelector('.order-list');
@@ -3201,6 +3228,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       shuffleOptions();
       shuffleOrderLists();
+      shuffleSelectOptions();
       injectRetryButtons();
       injectErrorSummaryContainers();
       loadState();
