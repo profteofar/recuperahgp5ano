@@ -165,6 +165,87 @@
       cursor: not-allowed;
     }
 
+    /* ===== Menu "Fichas" (agrupa as 10 fichas sequenciais num dropdown,
+       para encurtar a barra de navegação) ===== */
+    .nav-dropdown {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .nav-dropdown-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 0.8rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .nav-dropdown-toggle:hover {
+      color: var(--text-main);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-dropdown-toggle.active {
+      color: var(--bronze);
+      border-bottom: 2px solid var(--bronze);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .nav-dropdown-caret {
+      font-size: 0.65rem;
+      transition: transform 0.15s ease;
+    }
+
+    .nav-dropdown.open .nav-dropdown-caret {
+      transform: rotate(180deg);
+    }
+
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.3rem;
+      background-color: var(--card-slate);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.4rem;
+      min-width: 260px;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+      z-index: 60;
+      flex-direction: column;
+      gap: 0.1rem;
+      white-space: normal;
+    }
+
+    .nav-dropdown.open .nav-dropdown-menu {
+      display: flex;
+    }
+
+    .nav-dropdown-menu .tab-btn {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+      white-space: normal;
+      border-radius: 4px;
+    }
+
+    .nav-dropdown-menu .tab-btn.active {
+      border-bottom: none;
+      background-color: rgba(209, 154, 102, 0.14);
+      border-radius: 4px;
+    }
+
     main {
       flex: 1;
       padding: 1.8rem 1.5rem;
@@ -841,16 +922,25 @@
 
   <nav id="navTabs" role="tablist">
     <button class="tab-btn" id="tabbtn-tabDiag" onclick="switchTab('tabDiag')">🩺 Ficha Diagnóstico</button>
-    <button class="tab-btn active" id="tabbtn-tab1" onclick="switchTab('tab1')">1. Comunidades Recoletoras</button>
-    <button class="tab-btn" id="tabbtn-tab2" onclick="switchTab('tab2')" disabled>🔒 2. Comunidades Agropastoris</button>
-    <button class="tab-btn" id="tabbtn-tab3" onclick="switchTab('tab3')" disabled>🔒 3. Povos Mediterrânicos</button>
-    <button class="tab-btn" id="tabbtn-tab4" onclick="switchTab('tab4')" disabled>🔒 4. Romanos na P. Ibérica</button>
-    <button class="tab-btn" id="tabbtn-tab5" onclick="switchTab('tab5')" disabled>🔒 5. Os Muçulmanos</button>
-    <button class="tab-btn" id="tabbtn-tab6" onclick="switchTab('tab6')" disabled>🔒 6. Formação de Portugal</button>
-    <button class="tab-btn" id="tabbtn-tab7" onclick="switchTab('tab7')" disabled>🔒 7. Portugal no Século XIII</button>
-    <button class="tab-btn" id="tabbtn-tab8" onclick="switchTab('tab8')" disabled>🔒 8. 1383-1385 Revolução</button>
-    <button class="tab-btn" id="tabbtn-tab9" onclick="switchTab('tab9')" disabled>🔒 9. Séculos XV e XVI</button>
-    <button class="tab-btn" id="tabbtn-tab10" onclick="switchTab('tab10')" disabled>🔒 10. União à Restauração</button>
+
+    <div class="nav-dropdown" id="fichasDropdown">
+      <button class="nav-dropdown-toggle active" id="fichasDropdownToggle" onclick="toggleFichasMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Menu das 10 fichas de estudo">
+        📚 <span id="fichasDropdownLabel">Ficha 1</span> <span class="nav-dropdown-caret">▾</span>
+      </button>
+      <div class="nav-dropdown-menu" id="fichasDropdownMenu">
+        <button class="tab-btn active" id="tabbtn-tab1" onclick="switchTab('tab1')">1. Comunidades Recoletoras</button>
+        <button class="tab-btn" id="tabbtn-tab2" onclick="switchTab('tab2')" disabled>🔒 2. Comunidades Agropastoris</button>
+        <button class="tab-btn" id="tabbtn-tab3" onclick="switchTab('tab3')" disabled>🔒 3. Povos Mediterrânicos</button>
+        <button class="tab-btn" id="tabbtn-tab4" onclick="switchTab('tab4')" disabled>🔒 4. Romanos na P. Ibérica</button>
+        <button class="tab-btn" id="tabbtn-tab5" onclick="switchTab('tab5')" disabled>🔒 5. Os Muçulmanos</button>
+        <button class="tab-btn" id="tabbtn-tab6" onclick="switchTab('tab6')" disabled>🔒 6. Formação de Portugal</button>
+        <button class="tab-btn" id="tabbtn-tab7" onclick="switchTab('tab7')" disabled>🔒 7. Portugal no Século XIII</button>
+        <button class="tab-btn" id="tabbtn-tab8" onclick="switchTab('tab8')" disabled>🔒 8. 1383-1385 Revolução</button>
+        <button class="tab-btn" id="tabbtn-tab9" onclick="switchTab('tab9')" disabled>🔒 9. Séculos XV e XVI</button>
+        <button class="tab-btn" id="tabbtn-tab10" onclick="switchTab('tab10')" disabled>🔒 10. União à Restauração</button>
+      </div>
+    </div>
+
     <button class="tab-btn" id="tabbtn-tabTeste" onclick="switchTab('tabTeste')">🏁 Teste Final</button>
     <button class="tab-btn" id="tabbtn-tabExam" onclick="switchTab('tabExam')">📄 Folha de Revisão</button>
   </nav>
@@ -2633,7 +2723,45 @@
         btn.setAttribute('aria-selected', 'true');
       }
 
+      updateFichasDropdownState(tabId);
+      closeFichasMenu();
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== Menu "Fichas" (agrupa as 10 fichas sequenciais num dropdown) =====
+
+    // Reflete no botão de alternar do menu qual ficha está ativa (ex.:
+    // "📚 Ficha 3 ▾") ou volta ao rótulo genérico quando se está noutro
+    // separador (Diagnóstico, Teste Final, Revisão).
+    function updateFichasDropdownState(tabId) {
+      const toggle = document.getElementById('fichasDropdownToggle');
+      const label = document.getElementById('fichasDropdownLabel');
+      if (!toggle || !label) return;
+      const m = /^tab(\d{1,2})$/.exec(tabId);
+      if (m) {
+        label.textContent = `Ficha ${m[1]}`;
+        toggle.classList.add('active');
+      } else {
+        label.textContent = 'Fichas';
+        toggle.classList.remove('active');
+      }
+    }
+
+    function toggleFichasMenu(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('fichasDropdown');
+      const toggle = document.getElementById('fichasDropdownToggle');
+      const willOpen = !dropdown.classList.contains('open');
+      dropdown.classList.toggle('open', willOpen);
+      if (toggle) toggle.setAttribute('aria-expanded', String(willOpen));
+    }
+
+    function closeFichasMenu() {
+      const dropdown = document.getElementById('fichasDropdown');
+      const toggle = document.getElementById('fichasDropdownToggle');
+      if (dropdown) dropdown.classList.remove('open');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
     }
 
     function openGuideModal() { document.getElementById('userGuideModal').classList.add('active'); }
@@ -3834,6 +3962,18 @@
         btn.setAttribute('aria-label', btn.textContent.trim() === '▲' ? 'Mover para cima' : 'Mover para baixo');
       });
     }
+
+    // Fecha o menu "Fichas" ao clicar fora dele ou ao premir Escape —
+    // comportamento habitual num dropdown.
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('fichasDropdown');
+      if (dropdown && dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
+        closeFichasMenu();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeFichasMenu();
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       shuffleOptions();
