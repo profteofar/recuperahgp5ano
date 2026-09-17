@@ -866,7 +866,9 @@
           <li><strong>Tentar Novamente:</strong> Se não atingires a meta, usa o botão "Tentar Novamente esta Ficha" para repetir apenas esse bloco.</li>
           <li><strong>💡 Pedir Pista:</strong> Podes consultar pistas pedagógicas nas questões mais desafiantes.</li>
           <li><strong>Glossário Rápido:</strong> Palavras sublinhadas a tracejado mostram a definição ao passar o rato ou tocar.</li>
-          <li><strong>Diploma de Conclusão:</strong> Ao finalizares as fichas, podes emitir e imprimir o teu Certificado de Estudo.</li>
+          <li><strong>🩺 Ficha Diagnóstico:</strong> Não bloqueia nem desbloqueia nada e podes fazê-la quando quiseres. Mas, ao contrário das fichas normais, <strong>cada pergunta só pode ser respondida uma vez</strong> — não há "tentar novamente" — para que o resultado mostre mesmo aquilo que já sabes nesse momento.</li>
+          <li><strong>🏁 Teste Final:</strong> Um teste de avaliação com 15 perguntas ao acaso sobre toda a matéria. <strong>Só pode ser feito uma vez</strong>: depois de gerado, não é possível repetir perguntas nem gerar outro teste. No final, ficas com a correção completa e a nota obtida.</li>
+          <li><strong>Diploma de Conclusão:</strong> Ao finalizares as fichas, podes emitir e imprimir o teu Certificado de Estudo, que também mostra os resultados da Ficha Diagnóstico e do Teste Final (quando já os tiveres feito).</li>
         </ul>
         <button class="btn btn-bronze" style="margin-top: 1.2rem; width: 100%;" onclick="closeGuideModal()">Começar</button>
       </div>
@@ -955,13 +957,12 @@
       <div class="study-card">
         <h2>🩺 Ficha Diagnóstico</h2>
         <p style="font-size:0.85rem; margin-bottom:0.8rem;">
-          Este diagnóstico não bloqueia nem desbloqueia nenhuma ficha — serve para identificares, em poucos minutos, os tópicos que já dominas e aqueles que precisas de rever com mais atenção. Podes fazê-lo quando quiseres: antes de começares, a meio do percurso ou até no fim, para confirmares o que aprendeste.
+          Este diagnóstico não bloqueia nem desbloqueia nenhuma ficha — serve para identificares, em poucos minutos, os tópicos que já dominas e aqueles que precisas de rever com mais atenção. Podes fazê-lo quando quiseres: antes de começares, a meio do percurso ou até no fim, para confirmares o que aprendeste. <strong>Cada pergunta só pode ser respondida uma vez</strong> — não há botão de "tentar de novo" nem forma de repetir a ficha — porque o objetivo é que o resultado mostre mesmo aquilo que já sabes neste momento. Depois de responderes, vês logo se acertaste ou erraste (e porquê) e, no fim, um resumo com a tua nota por tópico.
         </p>
 
         <div class="progress-bar-container">
           <span id="score-diag">Perguntas respondidas: 0 de 12</span>
           <div class="progress-track"><div class="progress-fill" id="pfill-diag"></div></div>
-          <button class="btn btn-danger-light" onclick="retryDiag()">🔄 Repetir Diagnóstico</button>
         </div>
 
         <div class="quiz-box">
@@ -2162,12 +2163,13 @@
       <div class="study-card">
         <h2>🏁 Teste Final</h2>
         <p style="font-size:0.85rem; margin-bottom:0.8rem;">
-          Um teste com <strong>15 perguntas escolhidas ao acaso</strong> de um banco com perguntas de todos os tópicos — diferente de cada vez que o geras. Não bloqueia nem desbloqueia nenhuma ficha; serve para verificares, de forma abrangente, se já dominas toda a matéria. Podes gerar um novo teste sempre que quiseres.
+          Um teste com <strong>15 perguntas escolhidas ao acaso</strong> de um banco com perguntas de todos os tópicos. Não bloqueia nem desbloqueia nenhuma ficha; serve para verificares, de forma abrangente, se já dominas toda a matéria. <strong>É uma avaliação final: só pode ser feito uma vez.</strong> Depois de gerado, não é possível repetir perguntas nem gerar um novo teste — só assim o resultado reflete mesmo o que sabes neste momento. No fim, ficas com a correção completa (pergunta a pergunta) e a nota obtida.
         </p>
 
-        <div id="finalTestLastResult" style="display:none;"><!-- preenchido via JS, se já houver um teste anterior --></div>
+        <div id="finalTestLastResult" style="display:none;"><!-- preenchido via JS: aviso de teste em curso ou já concluído --></div>
 
         <div id="finalTestStartState" style="text-align:center; padding:1.5rem 0;">
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.8rem;">⚠️ Responde com calma: depois de começares não há hipótese de repetir nenhuma pergunta nem de gerar outro teste.</p>
           <button class="btn btn-olive" onclick="generateFinalTest()">🎲 Gerar Teste Final (15 perguntas aleatórias)</button>
         </div>
 
@@ -2175,7 +2177,6 @@
           <div class="progress-bar-container">
             <span id="score-teste">Perguntas respondidas: 0 de 15</span>
             <div class="progress-track"><div class="progress-fill" id="pfill-teste"></div></div>
-            <button class="btn btn-danger-light" onclick="generateFinalTest()">🎲 Gerar Novo Teste</button>
           </div>
           <div class="quiz-box" id="finalTestQuizBox"><!-- preenchido via JS por generateFinalTest() --></div>
         </div>
@@ -2185,9 +2186,6 @@
           <h2>Resultado do Teste Final</h2>
           <p style="font-size: 0.95rem; color: #555;">Nota: <strong id="finalTestScoreSpan" style="color:var(--olive-green);">0/15 (0%)</strong></p>
           <p id="finalTestVerdict" style="margin-top:1rem; font-size:0.9rem; text-align:left;"></p>
-          <div class="no-print" style="margin-top:1.2rem;">
-            <button class="btn btn-olive" onclick="generateFinalTest()">🎲 Gerar Novo Teste</button>
-          </div>
         </div>
       </div>
     </div>
@@ -3231,6 +3229,10 @@
     // Repõe apenas UMA pergunta para nova tentativa, sem tocar nas restantes
     // da ficha. Funciona com qualquer um dos 5 tipos de pergunta.
     function retryQuestion(qid) {
+      // Salvaguarda: a Ficha Diagnóstico e o Teste Final não têm botão de
+      // "tentar de novo" (ver injectRetryButtons), mas esta função fica
+      // protegida na mesma contra qualquer chamada indevida.
+      if (qid.startsWith('diag_') || qid.startsWith('ft_q')) return;
       const qBlock = document.querySelector(`[data-qid="${qid}"]`);
       if (!qBlock) return;
 
@@ -3276,10 +3278,18 @@
 
     // Injeta o botão de "tentar de novo" a seguir a cada caixa de feedback,
     // sem precisar de o escrever à mão em todas as perguntas existentes.
+    //
+    // A Ficha Diagnóstico e o Teste Final ficam de fora: são avaliações
+    // (situação inicial e final do aluno), não fichas de treino — permitir
+    // corrigir uma resposta ali deixaria de refletir o que o aluno sabia
+    // realmente naquele momento.
     function injectRetryButtons() {
       document.querySelectorAll('.feedback-box').forEach(fb => {
         const qid = fb.id.replace('fb-', '');
         if (!qid || document.getElementById(`retry-${qid}`)) return;
+        const qBlock = fb.closest('.question-block');
+        const sheetId = qBlock ? qBlock.getAttribute('data-sheet') : null;
+        if (sheetId === 'diag' || sheetId === 'teste') return;
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'btn-retry-question';
@@ -3377,15 +3387,6 @@
       }
     }
 
-    function retryDiag() {
-      if (confirm('Queres reiniciar o Diagnóstico e responder novamente a todas as perguntas?')) {
-        const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
-        DIAG_ALL_QUESTIONS.forEach(qid => { delete store[qid]; });
-        localStorage.setItem('hgp5_all_official_answers', JSON.stringify(store));
-        location.reload();
-      }
-    }
-
     // ===================== Teste Final =====================
     // Ao contrário das fichas e do Diagnóstico (perguntas fixas, embutidas no
     // HTML), o Teste Final gera as suas perguntas dinamicamente a partir de
@@ -3399,8 +3400,15 @@
     }
 
     function generateFinalTest() {
+      // O Teste Final só pode ser gerado uma vez por aluno/navegador — é uma
+      // avaliação, não uma ficha de treino. Esta verificação é a salvaguarda
+      // real (o botão "Gerar Teste Final" já só aparece quando ainda não
+      // existe nenhuma sessão, mas isto protege contra qualquer chamada
+      // indevida à função).
+      if (getFinalTestSession()) return;
+
       // Amostragem sem reposição (Fisher-Yates) sobre todo o banco, depois
-      // corta nos primeiros 15 — garante 15 perguntas distintas a cada vez.
+      // corta nos primeiros 15 — garante 15 perguntas distintas.
       const pool = [...FINAL_TEST_BANK];
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -3408,7 +3416,31 @@
       }
       currentFinalTestItems = pool.slice(0, FINAL_TEST_SIZE);
       clearFinalTestAnswers();
+      saveFinalTestSession(currentFinalTestItems.map(it => it.id));
       renderFinalTestQuestions();
+    }
+
+    // A sessão do Teste Final guarda só os ids das 15 perguntas sorteadas
+    // (as respostas em si já ficam em hgp5_all_official_answers, como em
+    // qualquer pergunta). É o que permite: 1) nunca gerar um segundo teste;
+    // 2) se a página for recarregada a meio, continuar exatamente as mesmas
+    // 15 perguntas em vez de sortear outras; 3) depois de concluído,
+    // reconstruir a correção completa a qualquer momento.
+    function saveFinalTestSession(itemIds) {
+      try {
+        localStorage.setItem('hgp5_final_test_session', JSON.stringify({ itemIds }));
+      } catch (e) {
+        // localStorage indisponível: o teste continua a funcionar nesta
+        // visita, só não sobrevive a um recarregamento da página.
+      }
+    }
+    function getFinalTestSession() {
+      try {
+        const raw = localStorage.getItem('hgp5_final_test_session');
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
     }
 
     // Os ids das perguntas do Teste Final (ft_q0..ft_q14) são reaproveitados
@@ -3434,11 +3466,9 @@
         .map((item, idx) => renderFinalTestItem(item, `ft_q${idx}`))
         .join('');
 
-      // Baralha só o que acabou de ser criado (não mexe no resto da app), e
-      // dá o botão "Tentar Esta Pergunta" a cada nova pergunta, tal como nas
-      // fichas normais.
+      // Baralha só o que acabou de ser criado (não mexe no resto da app).
+      // Sem botão de retry aqui — ver injectRetryButtons().
       shuffleWithinRoot(container);
-      injectRetryButtons();
       enhanceAccessibilityWithinRoot(container);
 
       document.getElementById('finalTestResultCard').style.display = 'none';
@@ -3446,6 +3476,64 @@
       document.getElementById('finalTestActiveArea').style.display = 'block';
 
       updateFinalTestResults();
+    }
+
+    // Reproduz, num Teste Final recém-desenhado (perguntas ainda "em
+    // branco"), as respostas já dadas anteriormente — usado para retomar um
+    // teste a meio depois de recarregar a página, e para mostrar a correção
+    // de um teste já concluído. É a mesma lógica de loadState(), mas restrita
+    // às perguntas do Teste Final (ft_q0..ft_qN), para não mexer no resto da
+    // app.
+    function restoreFinalTestAnswers() {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      currentFinalTestItems.forEach((item, idx) => {
+        const qid = `ft_q${idx}`;
+        const data = store[qid];
+        const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+        if (!data || !qBlock) return;
+
+        if (data.type === 'single') {
+          qBlock.querySelectorAll('.option-btn').forEach(b => {
+            if (b.innerText === data.selectedText) b.click();
+          });
+        } else if (data.type === 'multi') {
+          const ids = data.selectedIds || [];
+          ids.forEach(id => { const cb = document.getElementById(id); if (cb) cb.checked = true; });
+          const confirmBtn = qBlock.querySelector('button.btn-bronze');
+          if (confirmBtn) confirmBtn.click();
+        } else if (data.type === 'order') {
+          const orderList = qBlock.querySelector('.order-list');
+          if (orderList && data.order) {
+            data.order.forEach(val => {
+              const it = orderList.querySelector(`.order-item[data-val="${val}"]`);
+              if (it) orderList.appendChild(it);
+            });
+          }
+          const confirmBtn = qBlock.querySelector('button.btn-bronze');
+          if (confirmBtn) confirmBtn.click();
+        }
+      });
+    }
+
+    // Chamada uma vez, no arranque da app: decide o que mostrar no separador
+    // Teste Final consoante já exista (ou não) uma sessão guardada.
+    function initFinalTestTab() {
+      const session = getFinalTestSession();
+      if (!session || !Array.isArray(session.itemIds) || session.itemIds.length === 0) {
+        // Nunca foi gerado — fica o ecrã inicial (botão "Gerar Teste Final"),
+        // que já é o estado por omissão do HTML.
+        return;
+      }
+      const items = session.itemIds.map(id => FINAL_TEST_BANK.find(b => b.id === id)).filter(Boolean);
+      if (items.length !== session.itemIds.length) {
+        // Segurança: dados inconsistentes (ex.: o banco de perguntas mudou
+        // de versão da app para a versão seguinte) — não tenta restaurar.
+        return;
+      }
+      currentFinalTestItems = items;
+      renderFinalTestQuestions();
+      restoreFinalTestAnswers();
+      renderFinalTestLastResultSummary();
     }
 
     function renderFinalTestItem(item, qid) {
@@ -3536,17 +3624,22 @@
       if (verdict) {
         verdict.innerHTML = percent >= 70
           ? `<strong>Parabéns!</strong> Com ${percent}%, mostras um domínio sólido de toda a matéria de HGP do 5.º ano.`
-          : `Obtiveste ${percent}%. Ainda vale a pena rever alguns tópicos — usa o 🔁 Banco de Reforço e tenta um novo Teste Final quando te sentires mais preparado(a).`;
+          : `Obtiveste ${percent}%. Ainda vale a pena rever alguns tópicos — usa o 🔁 Banco de Reforço para consolidar o que faltou. A correção de cada pergunta está disponível acima.`;
       }
       if (card) card.style.display = 'block';
     }
 
     // O resultado do Teste Final é guardado à parte (não junto das
-    // respostas normais), porque as 15 perguntas são sorteadas de novo a
-    // cada tentativa — não há um conjunto fixo de qids a partir do qual se
-    // possa recalcular a nota depois de a página ser recarregada.
+    // respostas normais), para ficar disponível de forma simples no diploma.
+    // Como o teste só pode ser concluído uma vez, esta função só grava a
+    // data a primeira vez que é chamada — se for chamada de novo (por
+    // exemplo ao restaurar a correção depois de um recarregamento da
+    // página), mantém a data original em vez de a substituir pela data do
+    // recarregamento.
     function saveFinalTestResult(correct, total, percent) {
-      const record = { correct, total, percent, date: new Date().toISOString() };
+      const existing = getFinalTestResult();
+      const date = existing ? existing.date : new Date().toISOString();
+      const record = { correct, total, percent, date };
       try {
         localStorage.setItem('hgp5_final_test_result', JSON.stringify(record));
       } catch (e) {
@@ -3565,14 +3658,36 @@
       }
     }
 
+    // Mostra, no topo do separador Teste Final, o aviso adequado ao estado
+    // da sessão: nada ainda (esconde), teste a meio (continuar), ou teste já
+    // concluído (bloqueado, com a nota — a correção completa está logo
+    // abaixo, nas próprias perguntas).
     function renderFinalTestLastResultSummary() {
       const box = document.getElementById('finalTestLastResult');
+      const startState = document.getElementById('finalTestStartState');
       if (!box) return;
+
+      const session = getFinalTestSession();
+      if (!session) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        if (startState) startState.style.display = 'block';
+        return;
+      }
+      // Já existe uma sessão (mesmo que ainda não concluída): o botão de
+      // "Gerar Teste Final" nunca mais deve aparecer.
+      if (startState) startState.style.display = 'none';
+
       const result = getFinalTestResult();
-      if (!result) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      if (!result) {
+        box.innerHTML = `<div class="summary-report-card"><h4>✏️ Teste Final em curso</h4><p>Ainda não respondeste a todas as perguntas. Continua abaixo — depois de concluído, não poderás repetir o teste.</p></div>`;
+        box.style.display = 'block';
+        return;
+      }
+
       const d = new Date(result.date);
       const dateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-      box.innerHTML = `<div class="summary-report-card"><h4>📋 Último Teste Final Realizado</h4><p>Obtiveste <strong>${result.correct} de ${result.total}</strong> perguntas corretas (<strong>${result.percent}%</strong>), em ${dateStr}.</p></div>`;
+      box.innerHTML = `<div class="summary-report-card"><h4>🔒 Teste Final Concluído</h4><p>Obtiveste <strong>${result.correct} de ${result.total}</strong> perguntas corretas (<strong>${result.percent}%</strong>), em ${dateStr}. Este teste já foi realizado e não pode ser repetido — a correção completa, pergunta a pergunta, está disponível abaixo.</p></div>`;
       box.style.display = 'block';
     }
 
@@ -3704,7 +3819,8 @@
     // dinamicamente o Teste Final. Não repete a parte de .image-thumb-card
     // (o Teste Final não tem imagens) para não voltar a percorrer todos os
     // cartões de imagem da app inteira e acumular listeners de teclado
-    // repetidos a cada "Gerar Novo Teste".
+    // repetidos (esta função corre de novo sempre que se restaura uma
+    // sessão do Teste Final ao recarregar a página).
     function enhanceAccessibilityWithinRoot(root) {
       root.querySelectorAll('.question-block').forEach(block => {
         const titleEl = block.querySelector('.question-title');
@@ -3726,7 +3842,7 @@
       injectRetryButtons();
       injectErrorSummaryContainers();
       loadState();
-      renderFinalTestLastResultSummary();
+      initFinalTestTab();
       enhanceAccessibility();
     });
   </script>
