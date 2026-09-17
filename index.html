@@ -851,6 +851,7 @@
     <button class="tab-btn" id="tabbtn-tab8" onclick="switchTab('tab8')" disabled>🔒 8. 1383-1385 Revolução</button>
     <button class="tab-btn" id="tabbtn-tab9" onclick="switchTab('tab9')" disabled>🔒 9. Séculos XV e XVI</button>
     <button class="tab-btn" id="tabbtn-tab10" onclick="switchTab('tab10')" disabled>🔒 10. União à Restauração</button>
+    <button class="tab-btn" id="tabbtn-tabTeste" onclick="switchTab('tabTeste')">🏁 Teste Final</button>
     <button class="tab-btn" id="tabbtn-tabExam" onclick="switchTab('tabExam')">📄 Folha de Revisão</button>
   </nav>
 
@@ -893,8 +894,12 @@
           </div>
           <div style="display: flex; justify-content: space-around; margin-top: 1.8rem; font-size: 0.85rem; color: #444;">
             <div><strong>Data de Conclusão:</strong><br><span id="certDateSpan">--/--/----</span></div>
-            <div><strong>Média Global:</strong><br><span id="certScoreSpan" style="font-weight:bold; color:var(--olive-green);">0%</span></div>
+            <div><strong>Média Global (Fichas 1-10):</strong><br><span id="certScoreSpan" style="font-weight:bold; color:var(--olive-green);">0%</span></div>
             <div><strong>Validação:</strong><br>O Professor / Encarregado de Educação</div>
+          </div>
+          <div style="display: flex; justify-content: space-around; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc; font-size: 0.85rem; color: #444;">
+            <div><strong>🩺 Ficha Diagnóstico:</strong><br><span id="certDiagSpan" style="font-weight:bold; color:var(--bronze-hover);">Não realizada</span></div>
+            <div><strong>🏁 Teste Final:</strong><br><span id="certFinalTestSpan" style="font-weight:bold; color:var(--bronze-hover);">Não realizado</span></div>
           </div>
         </div>
         <div style="display:flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;" class="no-print">
@@ -2152,6 +2157,41 @@
       </div>
     </div>
 
+    <!-- ================= TESTE FINAL ================= -->
+    <div id="tabTeste" class="section-content">
+      <div class="study-card">
+        <h2>🏁 Teste Final</h2>
+        <p style="font-size:0.85rem; margin-bottom:0.8rem;">
+          Um teste com <strong>15 perguntas escolhidas ao acaso</strong> de um banco com perguntas de todos os tópicos — diferente de cada vez que o geras. Não bloqueia nem desbloqueia nenhuma ficha; serve para verificares, de forma abrangente, se já dominas toda a matéria. Podes gerar um novo teste sempre que quiseres.
+        </p>
+
+        <div id="finalTestLastResult" style="display:none;"><!-- preenchido via JS, se já houver um teste anterior --></div>
+
+        <div id="finalTestStartState" style="text-align:center; padding:1.5rem 0;">
+          <button class="btn btn-olive" onclick="generateFinalTest()">🎲 Gerar Teste Final (15 perguntas aleatórias)</button>
+        </div>
+
+        <div id="finalTestActiveArea" style="display:none;">
+          <div class="progress-bar-container">
+            <span id="score-teste">Perguntas respondidas: 0 de 15</span>
+            <div class="progress-track"><div class="progress-fill" id="pfill-teste"></div></div>
+            <button class="btn btn-danger-light" onclick="generateFinalTest()">🎲 Gerar Novo Teste</button>
+          </div>
+          <div class="quiz-box" id="finalTestQuizBox"><!-- preenchido via JS por generateFinalTest() --></div>
+        </div>
+
+        <div class="certificate-sheet" id="finalTestResultCard" style="display:none; margin-top:1.5rem;">
+          <div class="cert-seal">🏁</div>
+          <h2>Resultado do Teste Final</h2>
+          <p style="font-size: 0.95rem; color: #555;">Nota: <strong id="finalTestScoreSpan" style="color:var(--olive-green);">0/15 (0%)</strong></p>
+          <p id="finalTestVerdict" style="margin-top:1rem; font-size:0.9rem; text-align:left;"></p>
+          <div class="no-print" style="margin-top:1.2rem;">
+            <button class="btn btn-olive" onclick="generateFinalTest()">🎲 Gerar Novo Teste</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ================= FOLHA DE REVISÃO ================= -->
     <div id="tabExam" class="section-content">
       <div class="exam-sheet">
@@ -2297,6 +2337,219 @@
     };
     const DIAG_ALL_QUESTIONS = Object.values(DIAG_QUESTIONS_PER_TOPIC).flat();
 
+    // Banco de perguntas do Teste Final: 3 perguntas por tópico (30 no
+    // total), das quais 15 são sorteadas de cada vez que o aluno gera um
+    // teste. São perguntas próprias (não reaproveitam os elementos das
+    // fichas, o que evitaria ids duplicados e efeitos colaterais no
+    // progresso dessas fichas) e distintas das da Ficha Diagnóstico, para
+    // não se tornarem repetitivas para quem já fez o diagnóstico.
+    const FINAL_TEST_BANK = [
+      // ---- 1. Comunidades Recoletoras ----
+      { id: 'ft_f1_1', topic: 'f1', type: 'single', title: 'Os instrumentos usados pelas comunidades recoletoras, como bifaces e arpões, eram feitos sobretudo de…',
+        options: [
+          { text: 'pedra lascada.', correct: true, feedback: 'Correto! A pedra lascada foi a principal matéria-prima do Paleolítico.' },
+          { text: 'ferro forjado.', correct: false, feedback: 'Incorreto. O trabalho do ferro é muito posterior a este período.' },
+          { text: 'bronze fundido.', correct: false, feedback: 'Incorreto. O bronze só surge com comunidades muito mais desenvolvidas tecnologicamente.' }
+        ] },
+      { id: 'ft_f1_2', topic: 'f1', type: 'single', title: 'O domínio do fogo pelas comunidades recoletoras NÃO serviu para…',
+        options: [
+          { text: 'construir estradas e pontes.', correct: true, feedback: 'Correto! Estradas e pontes são obras da engenharia romana, muito posteriores.' },
+          { text: 'afugentar animais ferozes.', correct: false, feedback: 'Incorreto. Essa era mesmo uma das utilidades do fogo.' },
+          { text: 'aquecer e iluminar as cavernas.', correct: false, feedback: 'Incorreto. Essa era mesmo uma das utilidades do fogo.' }
+        ] },
+      { id: 'ft_f1_3', topic: 'f1', type: 'multi', title: 'Seleciona as funções do fogo para as comunidades recoletoras:',
+        options: [
+          { text: 'Aquecer e iluminar as cavernas', correct: true },
+          { text: 'Afugentar animais ferozes', correct: true },
+          { text: 'Fundir metais preciosos', correct: false },
+          { text: 'Construir templos religiosos', correct: false }
+        ], feedback: 'Correto! O fogo servia para aquecer, iluminar e afugentar animais ferozes — a fundição de metais e a construção de templos são muito posteriores.' },
+
+      // ---- 2. Comunidades Agropastoris ----
+      { id: 'ft_f2_1', topic: 'f2', type: 'single', title: 'As comunidades agropastoris tornaram-se sedentárias porque…',
+        options: [
+          { text: 'passaram a praticar agricultura e pastorícia.', correct: true, feedback: 'Correto! Produzir o próprio alimento permitiu fixar-se num só local.' },
+          { text: 'foram obrigadas pelos romanos a fixar-se.', correct: false, feedback: 'Incorreto. Os romanos surgem muito depois deste período.' },
+          { text: 'deixaram de conseguir caçar.', correct: false, feedback: 'Incorreto. A caça não desapareceu; o que mudou foi terem passado também a produzir alimento.' }
+        ] },
+      { id: 'ft_f2_2', topic: 'f2', type: 'single', title: 'Os monumentos megalíticos, como as antas, serviam sobretudo para…',
+        options: [
+          { text: 'rituais e sepulturas coletivas.', correct: true, feedback: 'Correto! Antas e menires tinham função funerária e/ou ritual.' },
+          { text: 'armazenar cereais.', correct: false, feedback: 'Incorreto. Para isso usavam-se estruturas e recipientes de cerâmica, não megálitos.' },
+          { text: 'defender o povoado de ataques.', correct: false, feedback: 'Incorreto. Não tinham função defensiva.' }
+        ] },
+      { id: 'ft_f2_3', topic: 'f2', type: 'single', title: 'No século V a.C., antes da chegada dos povos mediterrânicos, a Península Ibérica era habitada sobretudo por…',
+        options: [
+          { text: 'Iberos e Celtas.', correct: true, feedback: 'Correto! Eram os povos que já se tinham fixado na Península.' },
+          { text: 'Romanos e Muçulmanos.', correct: false, feedback: 'Incorreto. Ambos chegariam à Península bastante mais tarde.' },
+          { text: 'Vikings e Persas.', correct: false, feedback: 'Incorreto. Nenhum destes povos se fixou na Península Ibérica.' }
+        ] },
+
+      // ---- 3. Povos Mediterrânicos ----
+      { id: 'ft_f3_1', topic: 'f3', type: 'single', title: 'Os Gregos deixaram como principal herança aos povos da Península Ibérica…',
+        options: [
+          { text: 'a utilização da moeda.', correct: true, feedback: 'Correto! Os Gregos introduziram a moeda como meio de troca.' },
+          { text: 'o alfabeto.', correct: false, feedback: 'Incorreto. O alfabeto foi trazido pelos Fenícios.' },
+          { text: 'a técnica de salga do peixe.', correct: false, feedback: 'Incorreto. Essa técnica foi trazida pelos Cartagineses.' }
+        ] },
+      { id: 'ft_f3_2', topic: 'f3', type: 'single', title: 'Os Cartagineses ficaram particularmente conhecidos pela técnica de…',
+        options: [
+          { text: 'salga e conservação do peixe.', correct: true, feedback: 'Correto! A salga era uma técnica de conservação de alimentos.' },
+          { text: 'cunhagem de moeda.', correct: false, feedback: 'Incorreto. Essa herança é atribuída aos Gregos.' },
+          { text: 'construção de aquedutos.', correct: false, feedback: 'Incorreto. Os aquedutos são uma obra romana.' }
+        ] },
+      { id: 'ft_f3_3', topic: 'f3', type: 'multi', title: 'Seleciona os povos mediterrânicos que contactaram com a Península Ibérica neste período:',
+        options: [
+          { text: 'Fenícios', correct: true },
+          { text: 'Gregos', correct: true },
+          { text: 'Cartagineses', correct: true },
+          { text: 'Vikings', correct: false }
+        ], feedback: 'Correto! Fenícios, Gregos e Cartagineses foram os três povos mediterrânicos estudados; os Vikings nunca se fixaram na Península.' },
+
+      // ---- 4. Romanos na P. Ibérica ----
+      { id: 'ft_f4_1', topic: 'f4', type: 'single', title: 'Os romanos chamavam ao mar Mediterrâneo…',
+        options: [
+          { text: '"Mare Nostrum" (o nosso mar).', correct: true, feedback: 'Correto! Era assim que os romanos chamavam ao Mediterrâneo, que dominavam por completo.' },
+          { text: '"Mare Ibericum".', correct: false, feedback: 'Incorreto. Essa designação não era usada pelos romanos.' },
+          { text: '"Mare Lusitanum".', correct: false, feedback: 'Incorreto. Essa designação não era usada pelos romanos.' }
+        ] },
+      { id: 'ft_f4_2', topic: 'f4', type: 'single', title: 'A romanização é…',
+        options: [
+          { text: 'a influência que os romanos exerceram sobre os povos conquistados.', correct: true, feedback: 'Correto! Incluiu a língua, as leis, as construções e os costumes.' },
+          { text: 'apenas a conquista militar do território.', correct: false, feedback: 'Incorreto. A romanização vai muito além da conquista militar.' },
+          { text: 'o comércio entre romanos e gregos.', correct: false, feedback: 'Incorreto. Não se trata de uma relação comercial entre povos.' }
+        ] },
+      { id: 'ft_f4_3', topic: 'f4', type: 'order', title: 'Ordena estes três acontecimentos ligados à presença romana, do mais antigo ao mais recente:',
+        items: [
+          { val: 'conquista', label: 'Início da conquista romana da Península Ibérica (218 a.C.)' },
+          { val: 'crist', label: 'O cristianismo torna-se religião oficial do Império (380)' },
+          { val: 'queda', label: 'Queda do Império Romano do Ocidente (476)' }
+        ], feedback: 'Correto! Conquista da Península (218 a.C.) → Cristianismo oficializado (380) → Queda do Império Romano do Ocidente (476).' },
+
+      // ---- 5. Os Muçulmanos ----
+      { id: 'ft_f5_1', topic: 'f5', type: 'single', title: 'O exército muçulmano atravessou para a Península Ibérica, em 711, através do…',
+        options: [
+          { text: 'Estreito de Gibraltar.', correct: true, feedback: 'Correto! Foi por aí que Tárique e o seu exército entraram na Península.' },
+          { text: 'Canal da Mancha.', correct: false, feedback: 'Incorreto. Esse canal separa a Grã-Bretanha da França, muito longe deste episódio.' },
+          { text: 'Mar Negro.', correct: false, feedback: 'Incorreto. O Mar Negro fica muito distante da Península Ibérica.' }
+        ] },
+      { id: 'ft_f5_2', topic: 'f5', type: 'single', title: 'A nora, uma das heranças muçulmanas, era usada principalmente para…',
+        options: [
+          { text: 'irrigar os campos agrícolas.', correct: true, feedback: 'Correto! A nora revolucionou a agricultura ao facilitar a irrigação.' },
+          { text: 'moer cereais.', correct: false, feedback: 'Incorreto. Para moer cereais usavam-se moinhos.' },
+          { text: 'tecer tecidos.', correct: false, feedback: 'Incorreto. A tecelagem usava teares, não a nora.' }
+        ] },
+      { id: 'ft_f5_3', topic: 'f5', type: 'single', title: 'A Reconquista Cristã teve início na batalha de…',
+        options: [
+          { text: 'Covadonga.', correct: true, feedback: 'Correto! Em 722, nas Astúrias, deu-se o primeiro grande marco da Reconquista.' },
+          { text: 'Ourique.', correct: false, feedback: 'Incorreto. Ourique está associada à lenda da fundação de Portugal.' },
+          { text: 'Aljubarrota.', correct: false, feedback: 'Incorreto. Aljubarrota ocorre séculos mais tarde, em 1385.' }
+        ] },
+
+      // ---- 6. Formação de Portugal ----
+      { id: 'ft_f6_1', topic: 'f6', type: 'single', title: 'D. Teresa, que governou após a morte do conde D. Henrique, era…',
+        options: [
+          { text: 'mãe de D. Afonso Henriques.', correct: true, feedback: 'Correto! D. Teresa era mãe de D. Afonso Henriques.' },
+          { text: 'esposa de D. Afonso Henriques.', correct: false, feedback: 'Incorreto. D. Teresa era mãe de D. Afonso Henriques, não sua esposa.' },
+          { text: 'filha de D. Afonso Henriques.', correct: false, feedback: 'Incorreto. D. Teresa era mãe de D. Afonso Henriques, não sua filha.' }
+        ] },
+      { id: 'ft_f6_2', topic: 'f6', type: 'single', title: 'A Bula Manifestis Probatum, de 1179, foi emitida por…',
+        options: [
+          { text: 'o Papa.', correct: true, feedback: 'Correto! Foi o Papa Alexandre III quem reconheceu D. Afonso Henriques como rei.' },
+          { text: 'o rei de Castela.', correct: false, feedback: 'Incorreto. O reconhecimento papal, não de Castela, era o que faltava a D. Afonso Henriques.' },
+          { text: 'o próprio D. Afonso Henriques.', correct: false, feedback: 'Incorreto. Um rei não podia autoproclamar-se reconhecido pela Igreja.' }
+        ] },
+      { id: 'ft_f6_3', topic: 'f6', type: 'order', title: 'Ordena estes três acontecimentos do mais antigo ao mais recente:',
+        items: [
+          { val: 'doacao', label: 'Doação do Condado Portucalense a D. Henrique (1096)' },
+          { val: 'mamede', label: 'Batalha de São Mamede (1128)' },
+          { val: 'bula', label: 'Bula Manifestis Probatum (1179)' }
+        ], feedback: 'Correto! Doação do Condado (1096) → Batalha de São Mamede (1128) → Bula Manifestis Probatum (1179).' },
+
+      // ---- 7. Portugal no Século XIII ----
+      { id: 'ft_f7_1', topic: 'f7', type: 'single', title: 'O Foral de Coimbra, atribuído por D. Afonso I, é um documento que…',
+        options: [
+          { text: 'concede direitos e deveres a uma povoação.', correct: true, feedback: 'Correto! Um foral regulava a vida de uma povoação.' },
+          { text: 'declara guerra a Castela.', correct: false, feedback: 'Incorreto. Um foral não é um documento de guerra.' },
+          { text: 'é um tratado com outro país.', correct: false, feedback: 'Incorreto. Um foral é um documento interno, não um tratado internacional.' }
+        ] },
+      { id: 'ft_f7_2', topic: 'f7', type: 'single', title: 'O Tratado de Alcanizes, de 1297, fixou a fronteira portuguesa…',
+        options: [
+          { text: 'a este, com Castela.', correct: true, feedback: 'Correto! D. Dinis fixou os limites do território a este.' },
+          { text: 'a sul, com o Algarve.', correct: false, feedback: 'Incorreto. O Algarve já tinha sido conquistado antes deste tratado, por D. Afonso III.' },
+          { text: 'a norte, com a Galiza.', correct: false, feedback: 'Incorreto. Este tratado não trata da fronteira norte.' }
+        ] },
+      { id: 'ft_f7_3', topic: 'f7', type: 'single', title: 'O estilo arquitetónico do Mosteiro de Alcobaça é o…',
+        options: [
+          { text: 'gótico.', correct: true, feedback: 'Correto! O Mosteiro de Alcobaça é um exemplo do estilo gótico.' },
+          { text: 'românico.', correct: false, feedback: 'Incorreto. O estilo românico é anterior e mais simples, como a Igreja de Cedofeita.' },
+          { text: 'manuelino.', correct: false, feedback: 'Incorreto. O manuelino surge só nos séculos XV-XVI.' }
+        ] },
+
+      // ---- 8. 1383-1385 Revolução ----
+      { id: 'ft_f8_1', topic: 'f8', type: 'single', title: 'D. Leonor Teles tornou-se regente do reino após a morte de…',
+        options: [
+          { text: 'D. Fernando.', correct: true, feedback: 'Correto! D. Fernando era seu marido e rei de Portugal.' },
+          { text: 'D. Pedro I.', correct: false, feedback: 'Incorreto. D. Pedro I não está associado a esta crise.' },
+          { text: 'D. João I.', correct: false, feedback: 'Incorreto. D. João I é quem viria a resolver a crise, não quem a originou.' }
+        ] },
+      { id: 'ft_f8_2', topic: 'f8', type: 'single', title: 'A Batalha de Aljubarrota, em 1385, opôs as tropas portuguesas a…',
+        options: [
+          { text: 'Castela.', correct: true, feedback: 'Correto! Portugal defrontou o exército de Castela e venceu.' },
+          { text: 'França.', correct: false, feedback: 'Incorreto. A França não estava envolvida nesta batalha.' },
+          { text: 'Aragão.', correct: false, feedback: 'Incorreto. Aragão não estava envolvido nesta batalha.' }
+        ] },
+      { id: 'ft_f8_3', topic: 'f8', type: 'order', title: 'Ordena estes três acontecimentos da crise de 1383-1385, do mais antigo ao mais recente:',
+        items: [
+          { val: 'salvaterra', label: 'Tratado de Salvaterra de Magos (1383)' },
+          { val: 'andeiro', label: 'Morte do conde Andeiro, às mãos do Mestre de Avis (dezembro de 1383)' },
+          { val: 'aljubarrota', label: 'Batalha de Aljubarrota (1385)' }
+        ], feedback: 'Correto! Tratado de Salvaterra (1383) → Morte do conde Andeiro (dez. 1383) → Batalha de Aljubarrota (1385).' },
+
+      // ---- 9. Séculos XV e XVI ----
+      { id: 'ft_f9_1', topic: 'f9', type: 'single', title: 'A conquista de Ceuta, em 1415, teve como principal objetivo…',
+        options: [
+          { text: 'controlar uma cidade estratégica para o comércio.', correct: true, feedback: 'Correto! Ceuta era um importante entreposto comercial no Norte de África.' },
+          { text: 'colonizar o Brasil.', correct: false, feedback: 'Incorreto. O Brasil só seria alcançado em 1500, muito depois de Ceuta.' },
+          { text: 'travar guerra com Castela.', correct: false, feedback: 'Incorreto. A conquista de Ceuta não teve como alvo Castela.' }
+        ] },
+      { id: 'ft_f9_2', topic: 'f9', type: 'single', title: 'O Tratado de Tordesilhas, de 1494, dividiu o mundo entre…',
+        options: [
+          { text: 'Portugal e Espanha.', correct: true, feedback: 'Correto! O tratado dividia as terras a descobrir entre os dois reinos.' },
+          { text: 'Portugal e França.', correct: false, feedback: 'Incorreto. A França não fazia parte deste tratado.' },
+          { text: 'Espanha e Inglaterra.', correct: false, feedback: 'Incorreto. A Inglaterra não fazia parte deste tratado.' }
+        ] },
+      { id: 'ft_f9_3', topic: 'f9', type: 'multi', title: 'Seleciona os navegadores portugueses da Expansão:',
+        options: [
+          { text: 'Vasco da Gama', correct: true },
+          { text: 'Bartolomeu Dias', correct: true },
+          { text: 'Pedro Álvares Cabral', correct: true },
+          { text: 'Cristóvão Colombo', correct: false }
+        ], feedback: 'Correto! Vasco da Gama, Bartolomeu Dias e Pedro Álvares Cabral eram portugueses; Cristóvão Colombo navegou ao serviço de Espanha.' },
+
+      // ---- 10. União à Restauração ----
+      { id: 'ft_f10_1', topic: 'f10', type: 'single', title: 'A União Ibérica (1580-1640) teve origem…',
+        options: [
+          { text: 'na morte de D. Sebastião sem descendentes, em Alcácer Quibir.', correct: true, feedback: 'Correto! Isso originou uma crise de sucessão que Filipe II de Espanha aproveitou.' },
+          { text: 'numa vitória militar espanhola sobre Portugal.', correct: false, feedback: 'Incorreto. Não houve uma guerra de conquista para dar início à União Ibérica.' },
+          { text: 'num tratado comercial entre os dois reinos.', correct: false, feedback: 'Incorreto. A origem foi uma crise de sucessão, não um acordo comercial.' }
+        ] },
+      { id: 'ft_f10_2', topic: 'f10', type: 'single', title: 'A Restauração da Independência de Portugal ocorreu em…',
+        options: [
+          { text: '1 de dezembro de 1640.', correct: true, feedback: 'Correto! Nesse dia, um grupo de nobres restaurou a independência.' },
+          { text: '1 de dezembro de 1580.', correct: false, feedback: 'Incorreto. Em 1580 tem início a União Ibérica, não a Restauração.' },
+          { text: '25 de abril de 1640.', correct: false, feedback: 'Incorreto. A data certa é 1 de dezembro, não 25 de abril.' }
+        ] },
+      { id: 'ft_f10_3', topic: 'f10', type: 'single', title: 'Com a Restauração da Independência, iniciou-se a dinastia de…',
+        options: [
+          { text: 'Bragança.', correct: true, feedback: 'Correto! D. João, duque de Bragança, foi aclamado D. João IV.' },
+          { text: 'Avis.', correct: false, feedback: 'Incorreto. A dinastia de Avis tinha começado bem antes, em 1385.' },
+          { text: 'Borgonha.', correct: false, feedback: 'Incorreto. A dinastia de Borgonha corresponde aos primeiros reis de Portugal.' }
+        ] }
+    ];
+    const FINAL_TEST_SIZE = 15;
+    let currentFinalTestItems = []; // as 15 perguntas atualmente em curso no Teste Final
+
     let currentFontLevel = 0;
     const fontSizes = ['0.92rem', '1rem', '1.12rem'];
 
@@ -2310,31 +2563,41 @@
       if (h) h.classList.toggle('active');
     }
 
+    // Baralha os filhos diretos de um contentor, no próprio local (usa
+    // appendChild sobre os nós existentes, nunca clona) — por isso preserva
+    // sempre o estado de cada nó (disabled, classes, valores). Usada tanto
+    // nas passagens globais (toda a página) como, mais tarde, apenas dentro
+    // de um contentor recém-criado (ex.: o Teste Final).
+    function shuffleChildrenInPlace(container) {
+      const items = Array.from(container.children);
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        container.appendChild(items[j]);
+      }
+    }
+
     function shuffleOptions() {
       // Seletor genérico: cobre tanto os grupos de escolha única
       // (.options-group) como os de resposta múltipla (.checkbox-group) —
       // ambos identificam a resposta certa por atributo (data-correct),
       // nunca por posição, por isso é seguro reordenar os filhos.
-      document.querySelectorAll('[data-shuffle="true"]').forEach(group => {
-        const items = Array.from(group.children);
-        for (let i = items.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          group.appendChild(items[j]);
-        }
-      });
+      document.querySelectorAll('[data-shuffle="true"]').forEach(shuffleChildrenInPlace);
     }
 
     function shuffleOrderLists() {
       // As perguntas de ordenação identificam cada item pelo seu data-val,
       // nunca pela posição inicial — por isso também é seguro baralhá-las.
       // Sem isto, a pergunta "nascia" sempre já na ordem correta.
-      document.querySelectorAll('.order-list').forEach(list => {
-        const items = Array.from(list.children);
-        for (let i = items.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          list.appendChild(items[j]);
-        }
-      });
+      document.querySelectorAll('.order-list').forEach(shuffleChildrenInPlace);
+    }
+
+    // Variante scoped: baralha só o que está dentro de 'root', sem tocar no
+    // resto da página. Usada depois de gerar dinamicamente o Teste Final,
+    // para não re-baralhar (sem necessidade) as perguntas já em curso
+    // noutras fichas.
+    function shuffleWithinRoot(root) {
+      root.querySelectorAll('[data-shuffle="true"]').forEach(shuffleChildrenInPlace);
+      root.querySelectorAll('.order-list').forEach(shuffleChildrenInPlace);
     }
 
     function shuffleSelectOptions() {
@@ -2619,6 +2882,26 @@
 
       const globalPercent = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0;
       document.getElementById('certScoreSpan').innerText = `${globalPercent}%`;
+
+      // Ficha Diagnóstico: só mostra uma nota se tiver sido feita por completo
+      // — uma % calculada sobre respostas parciais não é uma avaliação justa
+      // para constar de um documento formal como o diploma.
+      const diagEl = document.getElementById('certDiagSpan');
+      if (diagEl) {
+        const diagStats = computeDiagStats();
+        diagEl.innerText = (diagStats.total > 0 && diagStats.answered === diagStats.total)
+          ? `${diagStats.percent}%`
+          : 'Não realizada';
+      }
+
+      // Teste Final: mostra o resultado do último teste completo que o aluno
+      // gerou (guardado à parte, já que as 15 perguntas são sorteadas de
+      // cada vez e não haveria como as reconstituir só a partir do progresso).
+      const testEl = document.getElementById('certFinalTestSpan');
+      if (testEl) {
+        const testResult = getFinalTestResult();
+        testEl.innerText = testResult ? `${testResult.correct}/${testResult.total} (${testResult.percent}%)` : 'Não realizado';
+      }
     }
 
     function updateBadges(store) {
@@ -2809,6 +3092,8 @@
     function refreshScore(sheetId) {
       if (sheetId === 'diag') {
         updateDiagResults();
+      } else if (sheetId === 'teste') {
+        updateFinalTestResults();
       } else {
         updateSheetScore(sheetId);
       }
@@ -3101,6 +3386,196 @@
       }
     }
 
+    // ===================== Teste Final =====================
+    // Ao contrário das fichas e do Diagnóstico (perguntas fixas, embutidas no
+    // HTML), o Teste Final gera as suas perguntas dinamicamente a partir de
+    // FINAL_TEST_BANK, por isso precisa de escapar o texto que insere no
+    // HTML e dentro dos atributos onclick.
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escapeJsString(str) {
+      return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function generateFinalTest() {
+      // Amostragem sem reposição (Fisher-Yates) sobre todo o banco, depois
+      // corta nos primeiros 15 — garante 15 perguntas distintas a cada vez.
+      const pool = [...FINAL_TEST_BANK];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      currentFinalTestItems = pool.slice(0, FINAL_TEST_SIZE);
+      clearFinalTestAnswers();
+      renderFinalTestQuestions();
+    }
+
+    // Os ids das perguntas do Teste Final (ft_q0..ft_q14) são reaproveitados
+    // a cada novo sorteio. Sem isto, respostas de uma tentativa anterior
+    // (desta ou de uma sessão anterior) ficariam guardadas sob os mesmos
+    // ids e o novo teste apareceria "já respondido" antes de o aluno tocar
+    // em nada.
+    function clearFinalTestAnswers() {
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      let changed = false;
+      for (let i = 0; i < FINAL_TEST_SIZE; i++) {
+        const qid = `ft_q${i}`;
+        if (store[qid]) { delete store[qid]; changed = true; }
+      }
+      if (changed) localStorage.setItem('hgp5_all_official_answers', JSON.stringify(store));
+    }
+
+    function renderFinalTestQuestions() {
+      const container = document.getElementById('finalTestQuizBox');
+      if (!container) return;
+
+      container.innerHTML = currentFinalTestItems
+        .map((item, idx) => renderFinalTestItem(item, `ft_q${idx}`))
+        .join('');
+
+      // Baralha só o que acabou de ser criado (não mexe no resto da app), e
+      // dá o botão "Tentar Esta Pergunta" a cada nova pergunta, tal como nas
+      // fichas normais.
+      shuffleWithinRoot(container);
+      injectRetryButtons();
+      enhanceAccessibilityWithinRoot(container);
+
+      document.getElementById('finalTestResultCard').style.display = 'none';
+      document.getElementById('finalTestStartState').style.display = 'none';
+      document.getElementById('finalTestActiveArea').style.display = 'block';
+
+      updateFinalTestResults();
+    }
+
+    function renderFinalTestItem(item, qid) {
+      if (item.type === 'single') return renderFinalTestSingle(item, qid);
+      if (item.type === 'multi') return renderFinalTestMulti(item, qid);
+      if (item.type === 'order') return renderFinalTestOrder(item, qid);
+      return '';
+    }
+
+    function renderFinalTestSingle(item, qid) {
+      const optsHtml = item.options.map(opt => {
+        const correctAttr = opt.correct ? ' data-correct="true"' : '';
+        return `<button class="option-btn"${correctAttr} onclick="checkAnswer('teste', '${qid}', this, '${escapeJsString(opt.feedback)}')">${escapeHtml(opt.text)}</button>`;
+      }).join('');
+      return `
+        <div class="question-block" data-sheet="teste" data-qid="${qid}">
+          <div class="question-header"><div class="question-title">${escapeHtml(item.title)}</div></div>
+          <div class="options-group" data-shuffle="true">${optsHtml}</div>
+          <div class="feedback-box" id="fb-${qid}"></div>
+        </div>`;
+    }
+
+    function renderFinalTestMulti(item, qid) {
+      const optsHtml = item.options.map((opt, i) => {
+        const correctAttr = opt.correct ? ' data-correct="true"' : '';
+        return `<label class="checkbox-item"><input type="checkbox"${correctAttr} id="${qid}_cb${i}"> ${escapeHtml(opt.text)}</label>`;
+      }).join('');
+      return `
+        <div class="question-block" data-sheet="teste" data-qid="${qid}">
+          <div class="question-header"><div class="question-title">${escapeHtml(item.title)}</div></div>
+          <div class="checkbox-group" data-shuffle="true">${optsHtml}</div>
+          <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkMultipleSelect('teste', '${qid}', '${escapeJsString(item.feedback)}')">Confirmar</button>
+          <div class="feedback-box" id="fb-${qid}"></div>
+        </div>`;
+    }
+
+    function renderFinalTestOrder(item, qid) {
+      const listId = `order_list_${qid}`;
+      const itemsHtml = item.items.map(it => `
+          <div class="order-item" data-val="${escapeHtml(it.val)}">${escapeHtml(it.label)} <div class="order-controls"><button onclick="moveItem('${listId}', -1, this)">▲</button><button onclick="moveItem('${listId}', 1, this)">▼</button></div></div>`).join('');
+      // Construído com aspas simples (tal como nas perguntas de ordenação
+      // escritas à mão nas outras fichas) e não com JSON.stringify: este
+      // array vai dentro de um atributo onclick="..." delimitado por aspas
+      // DUPLAS, e JSON.stringify produziria aspas duplas que fechariam o
+      // atributo antes do tempo, partindo o HTML.
+      const correctOrder = '[' + item.items.map(it => `'${escapeJsString(it.val)}'`).join(', ') + ']';
+      return `
+        <div class="question-block" data-sheet="teste" data-qid="${qid}">
+          <div class="question-header"><div class="question-title">${escapeHtml(item.title)}</div></div>
+          <div class="order-list" id="${listId}">${itemsHtml}</div>
+          <button class="btn btn-bronze" style="margin-top:0.6rem;" onclick="checkOrder('teste', '${qid}', '${listId}', ${correctOrder}, '${escapeJsString(item.feedback)}')">Validar Ordem</button>
+          <div class="feedback-box" id="fb-${qid}"></div>
+        </div>`;
+    }
+
+    function updateFinalTestResults() {
+      if (currentFinalTestItems.length === 0) return;
+      const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
+      let answered = 0;
+      let correct = 0;
+      currentFinalTestItems.forEach((item, idx) => {
+        const qid = `ft_q${idx}`;
+        if (store[qid]) {
+          answered++;
+          if (store[qid].isCorrect) correct++;
+        }
+      });
+      const total = currentFinalTestItems.length;
+      const answeredPercent = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+      const scoreEl = document.getElementById('score-teste');
+      const fillEl = document.getElementById('pfill-teste');
+      if (scoreEl) scoreEl.innerText = `Perguntas respondidas: ${answered} de ${total}`;
+      if (fillEl) fillEl.style.width = `${answeredPercent}%`;
+
+      if (total > 0 && answered === total) {
+        const percent = Math.round((correct / total) * 100);
+        renderFinalTestResultCard(correct, total, percent);
+        saveFinalTestResult(correct, total, percent);
+      }
+    }
+
+    function renderFinalTestResultCard(correct, total, percent) {
+      const card = document.getElementById('finalTestResultCard');
+      const scoreSpan = document.getElementById('finalTestScoreSpan');
+      const verdict = document.getElementById('finalTestVerdict');
+      if (scoreSpan) scoreSpan.innerText = `${correct}/${total} (${percent}%)`;
+      if (verdict) {
+        verdict.innerHTML = percent >= 70
+          ? `<strong>Parabéns!</strong> Com ${percent}%, mostras um domínio sólido de toda a matéria de HGP do 5.º ano.`
+          : `Obtiveste ${percent}%. Ainda vale a pena rever alguns tópicos — usa o 🔁 Banco de Reforço e tenta um novo Teste Final quando te sentires mais preparado(a).`;
+      }
+      if (card) card.style.display = 'block';
+    }
+
+    // O resultado do Teste Final é guardado à parte (não junto das
+    // respostas normais), porque as 15 perguntas são sorteadas de novo a
+    // cada tentativa — não há um conjunto fixo de qids a partir do qual se
+    // possa recalcular a nota depois de a página ser recarregada.
+    function saveFinalTestResult(correct, total, percent) {
+      const record = { correct, total, percent, date: new Date().toISOString() };
+      try {
+        localStorage.setItem('hgp5_final_test_result', JSON.stringify(record));
+      } catch (e) {
+        // localStorage indisponível ou cheio: o resultado fica visível no
+        // ecrã na mesma, só não sobrevive a um recarregamento da página.
+      }
+      renderFinalTestLastResultSummary();
+    }
+
+    function getFinalTestResult() {
+      try {
+        const raw = localStorage.getItem('hgp5_final_test_result');
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function renderFinalTestLastResultSummary() {
+      const box = document.getElementById('finalTestLastResult');
+      if (!box) return;
+      const result = getFinalTestResult();
+      if (!result) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      const d = new Date(result.date);
+      const dateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      box.innerHTML = `<div class="summary-report-card"><h4>📋 Último Teste Final Realizado</h4><p>Obtiveste <strong>${result.correct} de ${result.total}</strong> perguntas corretas (<strong>${result.percent}%</strong>), em ${dateStr}.</p></div>`;
+      box.style.display = 'block';
+    }
+
 
     function loadState() {
       const store = JSON.parse(localStorage.getItem('hgp5_all_official_answers') || '{}');
@@ -3225,6 +3700,25 @@
       });
     }
 
+    // Variante scoped de enhanceAccessibility(), para usar depois de gerar
+    // dinamicamente o Teste Final. Não repete a parte de .image-thumb-card
+    // (o Teste Final não tem imagens) para não voltar a percorrer todos os
+    // cartões de imagem da app inteira e acumular listeners de teclado
+    // repetidos a cada "Gerar Novo Teste".
+    function enhanceAccessibilityWithinRoot(root) {
+      root.querySelectorAll('.question-block').forEach(block => {
+        const titleEl = block.querySelector('.question-title');
+        const optsGroup = block.querySelector('.options-group, .checkbox-group');
+        if (titleEl && optsGroup) {
+          optsGroup.setAttribute('role', 'group');
+          optsGroup.setAttribute('aria-label', titleEl.textContent.trim());
+        }
+      });
+      root.querySelectorAll('.order-controls button').forEach(btn => {
+        btn.setAttribute('aria-label', btn.textContent.trim() === '▲' ? 'Mover para cima' : 'Mover para baixo');
+      });
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       shuffleOptions();
       shuffleOrderLists();
@@ -3232,6 +3726,7 @@
       injectRetryButtons();
       injectErrorSummaryContainers();
       loadState();
+      renderFinalTestLastResultSummary();
       enhanceAccessibility();
     });
   </script>
