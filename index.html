@@ -165,85 +165,37 @@
       cursor: not-allowed;
     }
 
-    /* ===== Menu "Fichas" (agrupa as 10 fichas sequenciais num dropdown,
-       para encurtar a barra de navegação) ===== */
-    .nav-dropdown {
-      position: relative;
-      display: inline-flex;
-    }
-
-    .nav-dropdown-toggle {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 0.5rem 0.8rem;
-      font-size: 0.82rem;
-      cursor: pointer;
-      border-radius: 4px;
-      font-weight: 600;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      white-space: nowrap;
-    }
-
-    .nav-dropdown-toggle:hover {
-      color: var(--text-main);
-      background-color: rgba(255, 255, 255, 0.05);
-    }
-
-    .nav-dropdown-toggle.active {
-      color: var(--bronze);
-      border-bottom: 2px solid var(--bronze);
-      border-radius: 4px 4px 0 0;
-    }
-
-    .nav-dropdown-caret {
-      font-size: 0.65rem;
-      transition: transform 0.15s ease;
-    }
-
-    .nav-dropdown.open .nav-dropdown-caret {
-      transform: rotate(180deg);
-    }
-
-    .nav-dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      margin-top: 0.3rem;
-      background-color: var(--card-slate);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 0.4rem;
-      min-width: 260px;
-      max-height: 70vh;
-      overflow-y: auto;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.4);
-      z-index: 60;
-      flex-direction: column;
-      gap: 0.1rem;
-      white-space: normal;
-    }
-
-    .nav-dropdown.open .nav-dropdown-menu {
+    /* ===== Menu "Fichas" (lista das 10 fichas sequenciais, aberta num
+       modal em vez de um dropdown ancorado — o dropdown ficava cortado e
+       difícil de usar no telemóvel; um modal centrado, com o mesmo
+       mecanismo já usado no Certificado/Relatório/Banco de Reforço, é
+       muito mais robusto em qualquer tamanho de ecrã) ===== */
+    .fichas-modal-list {
       display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
-    .nav-dropdown-menu .tab-btn {
+    .fichas-modal-list .tab-btn {
       width: 100%;
       justify-content: flex-start;
       text-align: left;
       white-space: normal;
-      border-radius: 4px;
+      padding: 0.85rem 1rem;
+      font-size: 0.92rem;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
     }
 
-    .nav-dropdown-menu .tab-btn.active {
-      border-bottom: none;
+    .fichas-modal-list .tab-btn:hover:not(:disabled) {
+      border-color: var(--bronze);
+    }
+
+    .fichas-modal-list .tab-btn.active {
+      border-color: var(--bronze);
+      border-bottom: 1px solid var(--bronze);
+      border-radius: 6px;
       background-color: rgba(209, 154, 102, 0.14);
-      border-radius: 4px;
     }
 
     main {
@@ -923,23 +875,9 @@
   <nav id="navTabs" role="tablist">
     <button class="tab-btn" id="tabbtn-tabDiag" onclick="switchTab('tabDiag')">🩺 Ficha Diagnóstico</button>
 
-    <div class="nav-dropdown" id="fichasDropdown">
-      <button class="nav-dropdown-toggle active" id="fichasDropdownToggle" onclick="toggleFichasMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Menu das 10 fichas de estudo">
-        📚 <span id="fichasDropdownLabel">Ficha 1</span> <span class="nav-dropdown-caret">▾</span>
-      </button>
-      <div class="nav-dropdown-menu" id="fichasDropdownMenu">
-        <button class="tab-btn active" id="tabbtn-tab1" onclick="switchTab('tab1')">1. Comunidades Recoletoras</button>
-        <button class="tab-btn" id="tabbtn-tab2" onclick="switchTab('tab2')" disabled>🔒 2. Comunidades Agropastoris</button>
-        <button class="tab-btn" id="tabbtn-tab3" onclick="switchTab('tab3')" disabled>🔒 3. Povos Mediterrânicos</button>
-        <button class="tab-btn" id="tabbtn-tab4" onclick="switchTab('tab4')" disabled>🔒 4. Romanos na P. Ibérica</button>
-        <button class="tab-btn" id="tabbtn-tab5" onclick="switchTab('tab5')" disabled>🔒 5. Os Muçulmanos</button>
-        <button class="tab-btn" id="tabbtn-tab6" onclick="switchTab('tab6')" disabled>🔒 6. Formação de Portugal</button>
-        <button class="tab-btn" id="tabbtn-tab7" onclick="switchTab('tab7')" disabled>🔒 7. Portugal no Século XIII</button>
-        <button class="tab-btn" id="tabbtn-tab8" onclick="switchTab('tab8')" disabled>🔒 8. 1383-1385 Revolução</button>
-        <button class="tab-btn" id="tabbtn-tab9" onclick="switchTab('tab9')" disabled>🔒 9. Séculos XV e XVI</button>
-        <button class="tab-btn" id="tabbtn-tab10" onclick="switchTab('tab10')" disabled>🔒 10. União à Restauração</button>
-      </div>
-    </div>
+    <button class="tab-btn active" id="fichasModalToggle" onclick="openFichasModal()" aria-haspopup="dialog">
+      📚 <span id="fichasDropdownLabel">Ficha 1</span> ▾
+    </button>
 
     <button class="tab-btn" id="tabbtn-tabTeste" onclick="switchTab('tabTeste')">🏁 Teste Final</button>
     <button class="tab-btn" id="tabbtn-tabExam" onclick="switchTab('tabExam')">📄 Folha de Revisão</button>
@@ -1037,6 +975,28 @@
         <div id="reinforceListContainer" style="max-height: 55vh; overflow-y: auto;"><!-- preenchido via JS --></div>
         <div style="display:flex; justify-content: flex-end; margin-top: 1rem;">
           <button class="btn btn-outline" onclick="closeReinforceModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="fichasModal" onclick="closeFichasModal()">
+      <div class="modal-window" style="max-width: 480px;" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeFichasModal()">&times;</button>
+        <h2 style="color: var(--bronze); margin-bottom: 0.5rem;">📚 Fichas de Estudo</h2>
+        <p style="font-size: 0.85rem; margin-bottom: 1rem;">
+          Escolhe uma ficha. Cada ficha seguinte desbloqueia-se ao atingires pelo menos 70% na anterior.
+        </p>
+        <div class="fichas-modal-list">
+          <button class="tab-btn active" id="tabbtn-tab1" onclick="switchTab('tab1')">1. Comunidades Recoletoras</button>
+          <button class="tab-btn" id="tabbtn-tab2" onclick="switchTab('tab2')" disabled>🔒 2. Comunidades Agropastoris</button>
+          <button class="tab-btn" id="tabbtn-tab3" onclick="switchTab('tab3')" disabled>🔒 3. Povos Mediterrânicos</button>
+          <button class="tab-btn" id="tabbtn-tab4" onclick="switchTab('tab4')" disabled>🔒 4. Romanos na P. Ibérica</button>
+          <button class="tab-btn" id="tabbtn-tab5" onclick="switchTab('tab5')" disabled>🔒 5. Os Muçulmanos</button>
+          <button class="tab-btn" id="tabbtn-tab6" onclick="switchTab('tab6')" disabled>🔒 6. Formação de Portugal</button>
+          <button class="tab-btn" id="tabbtn-tab7" onclick="switchTab('tab7')" disabled>🔒 7. Portugal no Século XIII</button>
+          <button class="tab-btn" id="tabbtn-tab8" onclick="switchTab('tab8')" disabled>🔒 8. 1383-1385 Revolução</button>
+          <button class="tab-btn" id="tabbtn-tab9" onclick="switchTab('tab9')" disabled>🔒 9. Séculos XV e XVI</button>
+          <button class="tab-btn" id="tabbtn-tab10" onclick="switchTab('tab10')" disabled>🔒 10. União à Restauração</button>
         </div>
       </div>
     </div>
@@ -2723,19 +2683,19 @@
         btn.setAttribute('aria-selected', 'true');
       }
 
-      updateFichasDropdownState(tabId);
-      closeFichasMenu();
+      updateFichasToggleState(tabId);
+      closeFichasModal();
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ===== Menu "Fichas" (agrupa as 10 fichas sequenciais num dropdown) =====
+    // ===== Menu "Fichas" (lista das 10 fichas sequenciais, num modal) =====
 
-    // Reflete no botão de alternar do menu qual ficha está ativa (ex.:
+    // Reflete no botão da barra de topo qual ficha está ativa (ex.:
     // "📚 Ficha 3 ▾") ou volta ao rótulo genérico quando se está noutro
     // separador (Diagnóstico, Teste Final, Revisão).
-    function updateFichasDropdownState(tabId) {
-      const toggle = document.getElementById('fichasDropdownToggle');
+    function updateFichasToggleState(tabId) {
+      const toggle = document.getElementById('fichasModalToggle');
       const label = document.getElementById('fichasDropdownLabel');
       if (!toggle || !label) return;
       const m = /^tab(\d{1,2})$/.exec(tabId);
@@ -2748,20 +2708,14 @@
       }
     }
 
-    function toggleFichasMenu(event) {
-      if (event) event.stopPropagation();
-      const dropdown = document.getElementById('fichasDropdown');
-      const toggle = document.getElementById('fichasDropdownToggle');
-      const willOpen = !dropdown.classList.contains('open');
-      dropdown.classList.toggle('open', willOpen);
-      if (toggle) toggle.setAttribute('aria-expanded', String(willOpen));
+    function openFichasModal() {
+      const modal = document.getElementById('fichasModal');
+      if (modal) modal.classList.add('active');
     }
 
-    function closeFichasMenu() {
-      const dropdown = document.getElementById('fichasDropdown');
-      const toggle = document.getElementById('fichasDropdownToggle');
-      if (dropdown) dropdown.classList.remove('open');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    function closeFichasModal() {
+      const modal = document.getElementById('fichasModal');
+      if (modal) modal.classList.remove('active');
     }
 
     function openGuideModal() { document.getElementById('userGuideModal').classList.add('active'); }
@@ -3887,6 +3841,18 @@
         btn.setAttribute('aria-controls', tabId);
       });
 
+      // O botão "📚 Fichas" da barra de topo tem a classe .tab-btn só para
+      // ficar com o mesmo estilo visual dos outros — na prática abre um
+      // modal, não um separador, por isso troca os atributos ARIA genéricos
+      // que acabou de receber por uns mais corretos.
+      const fichasToggle = document.getElementById('fichasModalToggle');
+      if (fichasToggle) {
+        fichasToggle.setAttribute('role', 'button');
+        fichasToggle.removeAttribute('aria-controls');
+        fichasToggle.removeAttribute('aria-selected');
+        fichasToggle.setAttribute('aria-haspopup', 'dialog');
+      }
+
       document.querySelectorAll('.section-content').forEach(sec => {
         sec.setAttribute('role', 'tabpanel');
         sec.setAttribute('aria-labelledby', 'tabbtn-' + sec.id);
@@ -3963,16 +3929,10 @@
       });
     }
 
-    // Fecha o menu "Fichas" ao clicar fora dele ou ao premir Escape —
-    // comportamento habitual num dropdown.
-    document.addEventListener('click', (e) => {
-      const dropdown = document.getElementById('fichasDropdown');
-      if (dropdown && dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
-        closeFichasMenu();
-      }
-    });
+    // Fecha o modal "Fichas" ao premir Escape (fechar ao clicar fora já é
+    // tratado pelo onclick no próprio overlay, no HTML).
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeFichasMenu();
+      if (e.key === 'Escape') closeFichasModal();
     });
 
     window.addEventListener('DOMContentLoaded', () => {
